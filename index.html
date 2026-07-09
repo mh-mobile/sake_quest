@@ -1260,7 +1260,7 @@ function renderHome() {
       <button class="cat-btn all" data-cat="">
         <span class="icon">🎲</span>
         <div><span class="name">全ジャンルおまかせ</span>
-        <div class="count">6ジャンルからランダム出題</div></div>
+        <div class="count">${Object.keys(CATS).length}ジャンルからランダム出題</div></div>
       </button>
       ${catBtns}
     </div>
@@ -1326,9 +1326,9 @@ function renderDifficulty(cat) {
         <span class="dicon">🎲</span>
         <div>
           <div class="dname">おまかせミックス</div>
-          <div class="ddesc">初級〜上級からバランスよく出題</div>
+          <div class="ddesc">初級〜達人からバランスよく出題</div>
         </div>
-        <span class="dxp">10〜20XP/問</span>
+        <span class="dxp">10〜30XP/問</span>
       </button>
     </div>
   </div>`;
