@@ -1173,6 +1173,7 @@ function checkBadges(ctx) {
    ============================================================ */
 function renderHome() {
   stopTimer();
+  questionActive = false;
   onKey = null;
   const lv = levelFromXp(state.xp);
   const cur = xpForLevel(lv), next = xpForLevel(lv + 1);
@@ -1419,6 +1420,7 @@ const EXAM_PASS = 16;       // 認定試験の合格ライン(20問中)
 
 let session = null;
 let timerId = null;
+let questionActive = false; // 出題中(カウントダウン作動中)かどうか
 
 function buildSession(qs, meta) {
   session = Object.assign({
@@ -1518,7 +1520,7 @@ function renderQuestion() {
   </div>`;
 
   document.getElementById("btn-quit").addEventListener("click", () => {
-    stopTimer(); renderHome();
+    stopTimer(); questionActive = false; renderHome();
   });
 
   const btns = Array.from($app.querySelectorAll(".choice"));
@@ -1530,21 +1532,30 @@ function renderQuestion() {
     if (n >= 1 && n <= btns.length && !btns[0].disabled) answer(btns[n - 1], btns, q);
   };
 
-  // タイマー開始
-  let remain = TIME_LIMIT;
-  session.remain = remain;
+  // タイマー開始(用語ポップアップ表示中は一時停止できるよう session に状態を保持)
+  session.remain = TIME_LIMIT;
+  session._q = q;
+  session._btns = btns;
+  questionActive = true;
+  startCountdown();
+}
+
+/* カウントダウンを開始/再開(session.remain から続行) */
+function startCountdown() {
+  stopTimer();
   const fill = document.getElementById("timerfill");
   const num = document.getElementById("timernum");
+  if (!fill || !num) return;
   timerId = setInterval(() => {
-    remain -= 0.2;
-    session.remain = remain;
-    const p = Math.max(0, remain / TIME_LIMIT * 100);
+    session.remain -= 0.2;
+    const p = Math.max(0, session.remain / TIME_LIMIT * 100);
     fill.style.width = p + "%";
-    if (remain <= 5) fill.classList.add("warn");
-    num.textContent = Math.max(0, Math.ceil(remain));
-    if (remain <= 0) {
+    if (session.remain <= 5) fill.classList.add("warn");
+    num.textContent = Math.max(0, Math.ceil(session.remain));
+    if (session.remain <= 0) {
       stopTimer();
-      answer(null, btns, q); // 時間切れ
+      questionActive = false;
+      answer(null, session._btns, session._q); // 時間切れ
     }
   }, 200);
 }
@@ -1564,7 +1575,10 @@ document.addEventListener("keydown", e => {
 function showTerm(i) {
   const e = GLOSSARY[i];
   if (!e) return;
-  closeTerm();
+  // 出題中に用語を開いたらカウントダウンを一時停止(読んでいる間に時間切れにしない)
+  if (questionActive) stopTimer();
+  const existing = document.getElementById("popup-overlay");
+  if (existing) existing.remove();
   const ov = document.createElement("div");
   ov.id = "popup-overlay";
   ov.innerHTML = `
@@ -1581,6 +1595,8 @@ function showTerm(i) {
 function closeTerm() {
   const ov = document.getElementById("popup-overlay");
   if (ov) ov.remove();
+  // 出題中だったらカウントダウンを再開
+  if (questionActive) startCountdown();
 }
 /* 用語タップ(画面を再描画しても効くよう委譲で処理) */
 document.addEventListener("click", ev => {
@@ -1590,6 +1606,7 @@ document.addEventListener("click", ev => {
 
 function answer(btn, btns, q) {
   stopTimer();
+  questionActive = false;
   onKey = null;
   btns.forEach(b => b.disabled = true);
   const isCorrect = btn && btn.dataset.correct === "1";

@@ -1,5 +1,5 @@
 /* 酒クエスト Service Worker — オフライン対応 */
-const VERSION = "sake-quest-v2";
+const VERSION = "sake-quest-v3";
 const CORE = [
   "./",
   "./index.html",
