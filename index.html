@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>酒クエスト 〜お酒の知識クイズ〜</title>
+<style>
+  :root {
+    --bg: #14100c;
+    --bg2: #1e1812;
+    --card: #262019;
+    --card-hi: #322a20;
+    --border: #3d3325;
+    --amber: #f0a832;
+    --amber-dim: #b87f1e;
+    --gold: #ffd166;
+    --text: #f2e8d8;
+    --muted: #a89880;
+    --green: #5ec26a;
+    --red: #e05c5c;
+    --blue: #6aa8e0;
+    --radius: 14px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(240,168,50,.08), transparent 60%),
+      radial-gradient(900px 500px at 10% 110%, rgba(106,168,224,.05), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  #app { max-width: 560px; margin: 0 auto; padding: 16px 16px 48px; min-height: 100%; }
+
+  /* ---------- 共通パーツ ---------- */
+  .screen { animation: fadein .3s ease; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 0 16px;
+  }
+  .logo { font-size: 20px; font-weight: 800; letter-spacing: .04em; }
+  .logo .beer { font-size: 24px; margin-right: 6px; }
+  .logo small { color: var(--muted); font-weight: 600; font-size: 11px; display: block; letter-spacing: .1em; }
+
+  .btn {
+    display: inline-block; border: none; cursor: pointer; font-family: inherit;
+    font-size: 15px; font-weight: 700; color: var(--text);
+    background: var(--card); border: 1px solid var(--border);
+    padding: 12px 18px; border-radius: var(--radius);
+    transition: transform .08s ease, background .15s ease, border-color .15s ease;
+    text-align: center;
+  }
+  .btn:hover { background: var(--card-hi); border-color: var(--amber-dim); }
+  .btn:active { transform: scale(.97); }
+  .btn.primary {
+    background: linear-gradient(135deg, var(--amber), #d98a12);
+    color: #241a08; border-color: transparent;
+    box-shadow: 0 4px 18px rgba(240,168,50,.25);
+  }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn.block { display: block; width: 100%; }
+  .btn.ghost { background: transparent; }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn:disabled:hover { background: var(--card); border-color: var(--border); }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px;
+  }
+
+  .progressbar { height: 8px; background: var(--bg2); border-radius: 99px; overflow: hidden; }
+  .progressbar > div { height: 100%; background: linear-gradient(90deg, var(--amber-dim), var(--amber)); border-radius: 99px; transition: width .35s ease; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; font-weight: 700; color: var(--muted);
+    background: var(--bg2); border: 1px solid var(--border);
+    padding: 3px 10px; border-radius: 99px;
+  }
+  .stars { color: var(--gold); letter-spacing: 1px; }
+
+  /* ---------- 用語リンク & ポップアップ ---------- */
+  .term {
+    border-bottom: 1px dashed rgba(106,168,224,.75);
+    cursor: help;
+  }
+  .term:hover { color: var(--blue); }
+
+  #popup-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.62);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px; z-index: 100; animation: fadein .15s ease;
+  }
+  .popup-card {
+    background: var(--card); border: 1px solid var(--amber-dim);
+    border-radius: var(--radius); padding: 18px;
+    max-width: 420px; width: 100%; max-height: 70vh; overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(0,0,0,.5); animation: pop .2s ease;
+  }
+  .popup-card .phead { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .popup-card .pterm { font-size: 17px; font-weight: 800; color: var(--gold); flex: 1; }
+  .popup-card .pclose {
+    border: none; background: var(--bg2); color: var(--muted);
+    width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
+    font-size: 14px; font-weight: 800; flex-shrink: 0; font-family: inherit;
+  }
+  .popup-card .pdef { font-size: 14px; }
+  .popup-card .phint { font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+  /* ---------- 用語集画面 ---------- */
+  .gloss-group { font-size: 13px; font-weight: 800; color: var(--muted); margin: 18px 0 8px; }
+  .gloss-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 14px; font-size: 13px; margin-bottom: 8px;
+  }
+  .gloss-item b { color: var(--gold); display: block; margin-bottom: 2px; }
+
+  /* ---------- ホーム ---------- */
+  .player-card { margin-bottom: 16px; }
+  .player-head { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+  .avatar {
+    width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #3a2f1e, #241c10);
+    border: 2px solid var(--amber-dim);
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+  }
+  .player-title { font-size: 12px; color: var(--gold); font-weight: 700; letter-spacing: .05em; }
+  .player-level { font-size: 20px; font-weight: 800; }
+  .xp-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin: 6px 0 4px; }
+
+  .welcome {
+    background: linear-gradient(135deg, rgba(106,168,224,.14), rgba(106,168,224,.03));
+    border: 1px solid rgba(106,168,224,.45);
+    border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px;
+    font-size: 13px;
+  }
+  .welcome b { color: var(--blue); display: block; font-size: 14px; margin-bottom: 4px; }
+  .welcome ol { margin: 6px 0 0 18px; }
+
+  .stat-row { display: flex; gap: 8px; margin: 16px 0; }
+  .stat {
+    flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 10px 6px; text-align: center;
+  }
+  .stat b { display: block; font-size: 18px; color: var(--gold); }
+  .stat span { font-size: 11px; color: var(--muted); font-weight: 600; }
+
+  .section-title { font-size: 14px; font-weight: 800; color: var(--muted); letter-spacing: .08em; margin: 20px 0 10px; }
+
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cat-btn {
+    position: relative;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 12px; cursor: pointer; font-family: inherit; color: var(--text);
+    text-align: left; transition: transform .08s ease, border-color .15s ease, background .15s ease;
+  }
+  .cat-btn:hover { border-color: var(--amber-dim); background: var(--card-hi); }
+  .cat-btn:active { transform: scale(.97); }
+  .cat-btn .icon { font-size: 26px; display: block; margin-bottom: 4px; }
+  .cat-btn .name { font-weight: 800; font-size: 15px; }
+  .cat-btn .count { font-size: 11px; color: var(--muted); }
+  .cat-btn.all {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, rgba(240,168,50,.16), rgba(240,168,50,.04));
+    border-color: var(--amber-dim);
+  }
+  .cat-btn.all .icon { margin-bottom: 0; }
+
+  .nav-row { display: flex; gap: 8px; margin-top: 20px; }
+  .nav-row .btn { flex: 1; padding: 12px 4px; font-size: 13px; }
+
+  .review-btn {
+    display: flex; align-items: center; justify-content: space-between; width: 100%;
+    margin-top: 10px;
+  }
+  .review-btn .pill { color: var(--red); border-color: rgba(224,92,92,.4); }
+
+  /* ---------- 難易度選択 ---------- */
+  .diff-list { display: flex; flex-direction: column; gap: 10px; }
+  .diff-btn {
+    display: flex; align-items: center; gap: 14px; width: 100%;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; cursor: pointer; font-family: inherit; color: var(--text);
+    text-align: left; transition: transform .08s ease, border-color .15s ease, background .15s ease;
+  }
+  .diff-btn:hover:not(:disabled) { border-color: var(--amber-dim); background: var(--card-hi); }
+  .diff-btn:active:not(:disabled) { transform: scale(.98); }
+  .diff-btn:disabled { opacity: .4; cursor: default; }
+  .diff-btn .dicon { font-size: 24px; }
+  .diff-btn .dname { font-weight: 800; font-size: 15px; }
+  .diff-btn .ddesc { font-size: 12px; color: var(--muted); }
+  .diff-btn .dxp { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--gold); white-space: nowrap; }
+
+  /* ---------- まなぶ ---------- */
+  .lesson-page {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 10px;
+  }
+  .lesson-page h3 { font-size: 15px; color: var(--gold); margin-bottom: 6px; }
+  .lesson-page p { font-size: 14px; }
+  .lesson-done {
+    text-align: center; font-size: 13px; font-weight: 700; color: var(--green);
+    padding: 10px; margin-top: 4px;
+  }
+
+  /* ---------- クイズ ---------- */
+  .quiz-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .quiz-head .progressbar { flex: 1; }
+  .qnum { font-size: 12px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+
+  .timer-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .timerbar { flex: 1; height: 6px; background: var(--bg2); border-radius: 99px; overflow: hidden; }
+  .timerbar > div { height: 100%; background: var(--blue); border-radius: 99px; transition: width .2s linear; }
+  .timerbar > div.warn { background: var(--red); }
+  .timer-num { font-size: 12px; font-weight: 800; color: var(--muted); width: 30px; text-align: right; }
+
+  .combo-tag {
+    font-size: 12px; font-weight: 800; color: var(--gold);
+    animation: pop .3s ease;
+  }
+  @keyframes pop { 0% { transform: scale(.5); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+
+  .question-card { margin-bottom: 16px; }
+  .question-cat { margin-bottom: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .question-text { font-size: 17px; font-weight: 700; line-height: 1.7; }
+
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choice {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 13px 14px; cursor: pointer; font-family: inherit; color: var(--text);
+    font-size: 15px; font-weight: 600; text-align: left;
+    transition: transform .08s ease, border-color .15s ease, background .15s ease;
+  }
+  .choice:hover:not(:disabled) { border-color: var(--amber-dim); background: var(--card-hi); }
+  .choice:active:not(:disabled) { transform: scale(.98); }
+  .choice:disabled { cursor: default; }
+  .choice .key {
+    width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0;
+    background: var(--bg2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: var(--muted);
+  }
+  .choice.correct { border-color: var(--green); background: rgba(94,194,106,.12); }
+  .choice.correct .key { background: var(--green); color: #10230f; border-color: var(--green); }
+  .choice.wrong { border-color: var(--red); background: rgba(224,92,92,.12); animation: shake .3s ease; }
+  .choice.wrong .key { background: var(--red); color: #2a0f0f; border-color: var(--red); }
+  .choice.dim { opacity: .45; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  .feedback { margin-top: 16px; animation: fadein .25s ease; }
+  .feedback .verdict { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+  .feedback .verdict.ok { color: var(--green); }
+  .feedback .verdict.ng { color: var(--red); }
+  .feedback .bonus { font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 6px; }
+  .feedback .exp { font-size: 14px; color: var(--text); background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  .feedback .exp::before { content: "💡 "; }
+  .feedback .newcard { font-size: 12px; font-weight: 700; color: var(--blue); margin-top: 8px; }
+  .feedback .btn { margin-top: 14px; }
+
+  /* ---------- リザルト ---------- */
+  .result-hero { text-align: center; padding: 24px 0 8px; }
+  .result-hero .big { font-size: 52px; }
+  .result-hero h2 { font-size: 22px; font-weight: 800; margin: 6px 0 2px; }
+  .result-hero p { color: var(--muted); font-size: 13px; }
+  .result-score { text-align: center; margin: 14px 0; }
+  .result-score b { font-size: 40px; color: var(--gold); }
+  .result-score span { font-size: 16px; color: var(--muted); }
+  .gain-list { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+  .gain {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 14px; font-size: 14px; font-weight: 600;
+  }
+  .gain b { color: var(--gold); }
+  .levelup {
+    text-align: center; background: linear-gradient(135deg, rgba(255,209,102,.18), rgba(240,168,50,.06));
+    border: 1px solid var(--amber-dim); border-radius: var(--radius);
+    padding: 14px; margin: 14px 0; font-weight: 800; animation: pop .4s ease;
+  }
+  .levelup small { display: block; font-weight: 600; color: var(--muted); font-size: 12px; }
+  .badge-earn {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(106,168,224,.1); border: 1px solid rgba(106,168,224,.4);
+    border-radius: 10px; padding: 10px 14px; margin: 8px 0; font-size: 14px; font-weight: 700;
+    animation: pop .4s ease;
+  }
+
+  /* ---------- 図鑑 ---------- */
+  .zukan-progress { margin-bottom: 16px; }
+  .zukan-progress .row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .zukan-cat-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; margin: 20px 0 10px; }
+  .zukan-cat-title .pill { margin-left: auto; }
+  .zukan-list { display: flex; flex-direction: column; gap: 8px; }
+  .zukan-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; font-size: 13px;
+  }
+  .zukan-item .zq { font-weight: 700; margin-bottom: 4px; }
+  .zukan-item .zq .stars { font-size: 11px; margin-right: 4px; }
+  .zukan-item .za { color: var(--gold); font-weight: 800; font-size: 13px; margin-bottom: 4px; }
+  .zukan-item .zexp { color: var(--muted); }
+  .zukan-item.locked { color: var(--muted); text-align: center; font-weight: 700; opacity: .6; }
+
+  /* ---------- バッジ ---------- */
+  .badge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .badge-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 12px; text-align: center;
+  }
+  .badge-card .bicon { font-size: 30px; display: block; margin-bottom: 6px; }
+  .badge-card .bname { font-weight: 800; font-size: 13px; }
+  .badge-card .bdesc { font-size: 11px; color: var(--muted); }
+  .badge-card.locked { opacity: .38; filter: grayscale(1); }
+  .badge-card.earned { border-color: var(--amber-dim); background: linear-gradient(135deg, rgba(240,168,50,.12), var(--card)); }
+
+  .back-btn { margin-bottom: 16px; }
+  .warning-note { text-align: center; font-size: 11px; color: var(--muted); margin-top: 32px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   データ:カテゴリ
+   ============================================================ */
+const CATS = {
+  basic:    { name: "お酒のきほん", icon: "🔰" },
+  beer:     { name: "ビール",     icon: "🍺" },
+  sake:     { name: "日本酒",     icon: "🍶" },
+  wine:     { name: "ワイン",     icon: "🍷" },
+  whisky:   { name: "ウイスキー", icon: "🥃" },
+  cocktail: { name: "カクテル",   icon: "🍸" },
+};
+
+const DIFFS = {
+  1: { name: "初級", stars: "★☆☆", xp: 10, desc: "お酒デビューでも大丈夫" },
+  2: { name: "中級", stars: "★★☆", xp: 15, desc: "飲むのが好きな人向け" },
+  3: { name: "上級", stars: "★★★", xp: 20, desc: "酒通への登竜門" },
+};
+
+/* ============================================================
+   データ:用語集(文中の用語をタップすると解説ポップアップ)
+   t: 表示名 / names: 本文中でリンク化する表記 / def: 解説
+   ============================================================ */
+const GLOSSARY = [
+  /* 共通 */
+  { g:"共通のことば", t:"発酵", names:["発酵"], def:"酵母が糖を食べて、アルコールと炭酸ガスに変えること。お酒づくりの心臓部で、ブドウの糖ならワイン、麦の糖ならビール、米の糖なら日本酒が生まれます。" },
+  { g:"共通のことば", t:"酵母", names:["酵母"], def:"糖をアルコールに変える小さな微生物。パン作りにも使われます。種類によって生まれる香りが大きく変わるため、お酒の個性を決める立役者です。" },
+  { g:"共通のことば", t:"蒸留", names:["蒸留"], def:"発酵させた液体を加熱し、水より先に蒸発するアルコールを集めて濃縮すること。度数の低い醸造酒から、ウイスキーや焼酎のような強いお酒を生み出す技術です。" },
+  { g:"共通のことば", t:"醸造酒", names:["醸造酒"], def:"発酵させただけのお酒。ビール・ワイン・日本酒が代表で、アルコール度数は20%以下と比較的低めです。" },
+  { g:"共通のことば", t:"蒸留酒", names:["蒸留酒"], def:"醸造酒を蒸留して度数を高めたお酒。ウイスキー・焼酎・ジン・ウォッカなどが仲間です。" },
+  { g:"共通のことば", t:"混成酒", names:["混成酒"], def:"お酒に果実・糖・香草などを加えて造るお酒。梅酒やリキュールが代表です。" },
+  { g:"共通のことば", t:"スピリッツ", names:["スピリッツ"], def:"蒸留酒のこと。特にジン・ウォッカ・ラム・テキーラは「4大スピリッツ」と呼ばれ、カクテルのベースの定番です。" },
+  { g:"共通のことば", t:"リキュール", names:["リキュール"], def:"スピリッツに果実・ハーブ・糖などを加えた混成酒。カシスやカンパリなど、カクテルの材料として大活躍します。" },
+  { g:"共通のことば", t:"アルコール度数", names:["アルコール度数","度数"], def:"液体に占めるアルコールの割合(%)。ビール約5%、ワイン約12%、日本酒約15%、ウイスキー約40%が目安です。" },
+  { g:"共通のことば", t:"チェイサー", names:["チェイサー"], def:"強いお酒と交互に飲む水やソーダのこと。悪酔いを防ぎ、味覚もリセットしてくれます。日本酒の場合は「和らぎ水」と呼びます。" },
+  /* ビール */
+  { g:"ビール", t:"麦芽(モルト)", names:["麦芽","モルト"], def:"大麦などの穀物を発芽させて乾燥させたもの。発芽で生まれた酵素がデンプンを糖に変え、その糖が発酵してお酒になります。ビールとウイスキーの土台です。" },
+  { g:"ビール", t:"ホップ", names:["ホップ"], def:"ビールに苦味と香りを与えるアサ科のつる性植物(使うのは毬花)。雑菌を抑えてビールを長持ちさせる働きもあります。" },
+  { g:"ビール", t:"上面発酵", names:["上面発酵"], def:"常温寄り(15〜25℃)で発酵させ、酵母が液面に浮かんでくる方式。香り豊かなエール系ビールの造り方です。" },
+  { g:"ビール", t:"下面発酵", names:["下面発酵"], def:"低温(5〜10℃)でゆっくり発酵させ、酵母がタンクの底に沈む方式。すっきりしたラガー系ビールの造り方です。" },
+  { g:"ビール", t:"エール", names:["エール"], def:"上面発酵で造るビールの総称。ペールエール、IPA、スタウトなど香り豊かなスタイルが揃います。" },
+  { g:"ビール", t:"ラガー", names:["ラガー"], def:"下面発酵で造るビールの総称。すっきりゴクゴク系で、日本の大手ビールはほぼすべてこの系統(ピルスナー)です。" },
+  { g:"ビール", t:"ピルスナー", names:["ピルスナー"], def:"チェコのピルゼン発祥の黄金色ラガー。キレと爽快感があり、世界で最も飲まれているビアスタイルの原型です。" },
+  { g:"ビール", t:"IPA", names:["IPA"], def:"ホップを大量に使った、苦くて香り高いエール。クラフトビールの看板スタイルで、柑橘やトロピカルフルーツのような香りが楽しめます。" },
+  { g:"ビール", t:"ペールエール", names:["ペールエール"], def:"淡色麦芽で造る香り豊かなエールの定番。クラフトビール入門にもおすすめのスタイルです。" },
+  { g:"ビール", t:"スタウト", names:["スタウト"], def:"深く焙煎した大麦・麦芽による黒いビール。コーヒーやチョコレートのような香ばしさが特徴で、ギネスが代表格です。" },
+  { g:"ビール", t:"IBU", names:["IBU"], def:"ビールの苦味の強さを表す国際単位。ラガーは10〜25程度、IPAは40以上になることも。数値が大きいほど苦い傾向です。" },
+  { g:"ビール", t:"ABV", names:["ABV"], def:"Alcohol By Volumeの略で、アルコール度数のこと。ビールのラベルによく書かれています。" },
+  /* 日本酒 */
+  { g:"日本酒", t:"麹(こうじ)", names:["米麹","麹"], def:"蒸した米に麹菌を生やしたもの。米のデンプンを糖に分解する、日本酒づくりの要です。「一麹、二酛、三造り」と言われるほど重要です。" },
+  { g:"日本酒", t:"精米歩合", names:["精米歩合"], def:"米をどれだけ磨いて残したかの割合。精米歩合50%なら米の外側を半分削ったということ。よく磨くほど雑味が減り、華やかな酒になる傾向があります。" },
+  { g:"日本酒", t:"醸造アルコール", names:["醸造アルコール"], def:"主にサトウキビ由来の純度の高いアルコール。香りを引き立て味を軽快にするため少量添加されます。添加なしが「純米」系、ありが「本醸造・吟醸」系です。" },
+  { g:"日本酒", t:"特定名称", names:["特定名称"], def:"純米酒・吟醸酒・本醸造酒など、原料と精米歩合の規定を満たした日本酒だけが名乗れる8つの分類のこと。ラベル選びの基本になります。" },
+  { g:"日本酒", t:"吟醸", names:["吟醸"], def:"よく磨いた米を低温でじっくり発酵させる「吟醸造り」のこと。リンゴやバナナのような華やかな吟醸香が生まれます。" },
+  { g:"日本酒", t:"火入れ", names:["火入れ"], def:"日本酒を約65℃で加熱殺菌する工程。通常は2回行い、一切行わないものが「生酒」です。" },
+  { g:"日本酒", t:"もろみ", names:["もろみ"], def:"タンクの中で発酵している、どろどろの状態の液体。これを搾ると日本酒と酒粕に分かれます。" },
+  { g:"日本酒", t:"酒母(酛)", names:["酒母","酛"], def:"酵母を純粋に大量に育てた、発酵のスターター。「酛(もと)」とも呼びます。ここから本仕込みへと進みます。" },
+  /* ワイン */
+  { g:"ワイン", t:"タンニン", names:["タンニン"], def:"渋味のもとになるポリフェノール。ブドウの果皮・種子や樽に由来し、赤ワインの骨格と熟成のポテンシャルを支えます。" },
+  { g:"ワイン", t:"ヴィンテージ", names:["ヴィンテージ"], def:"ブドウが収穫された年のこと。その年の天候が味を左右するため、同じワインでも年によって評価が変わります。" },
+  { g:"ワイン", t:"テロワール", names:["テロワール"], def:"土壌・気候・地形など、ブドウ畑を取り巻く環境の総体。同じ品種でも畑が違えば味が変わる、ワインの奥深さの核心です。" },
+  { g:"ワイン", t:"ボディ", names:["ボディ"], def:"ワインの味の重さ・厚みの表現。どっしり濃厚なら「フルボディ」、軽快なら「ライトボディ」、中間は「ミディアムボディ」です。" },
+  { g:"ワイン", t:"瓶内二次発酵", names:["瓶内二次発酵"], def:"瓶の中でもう一度発酵させ、生まれた炭酸ガスをそのまま閉じ込める製法。シャンパンをはじめ高級スパークリングの造り方です。" },
+  { g:"ワイン", t:"貴腐", names:["貴腐"], def:"貴腐菌がブドウの果皮に付いて水分を蒸発させ、糖と香りが凝縮する現象。奇跡的な条件で生まれる極甘口ワインの秘密です。" },
+  { g:"ワイン", t:"澱(おり)", names:["澱"], def:"熟成中に瓶の底に沈む、タンニンや色素などの沈殿物。飲む前に静かに立てておいたり、デキャンタージュで取り除いたりします。" },
+  { g:"ワイン", t:"ソムリエ", names:["ソムリエ"], def:"レストランでワインの仕入れ・管理・提案を担う専門家。予算と好みをざっくり伝えるだけで最適な1本を選んでくれます。" },
+  /* ウイスキー */
+  { g:"ウイスキー", t:"ピート", names:["ピート"], def:"泥炭(でいたん)。ヒースなどの植物が堆積したもので、麦芽の乾燥に焚くと煙のようなスモーキー香がウイスキーに付きます。アイラモルトの個性の源です。" },
+  { g:"ウイスキー", t:"シングルモルト", names:["シングルモルト"], def:"単一(シングル)の蒸留所で造られた、大麦麦芽100%(モルト)のウイスキー。蒸留所ごとの個性がそのまま味わえます。" },
+  { g:"ウイスキー", t:"グレーンウイスキー", names:["グレーンウイスキー","グレーン"], def:"トウモロコシなど大麦麦芽以外の穀物を主体にしたウイスキー。穏やかな味で、ブレンデッドの土台になります。" },
+  { g:"ウイスキー", t:"ブレンデッド", names:["ブレンデッド"], def:"個性豊かなモルトウイスキーと穏やかなグレーンウイスキーを混ぜたもの。バランスが良く、世界で飲まれるスコッチの大半を占めます。" },
+  /* カクテル */
+  { g:"カクテル", t:"ベルモット", names:["ベルモット"], def:"白ワインに香草やスパイスを加えた混成酒。辛口の「ドライ」と甘口の「スイート」があり、マティーニやネグローニに欠かせません。" },
+  { g:"カクテル", t:"ジュニパーベリー", names:["ジュニパーベリー"], def:"セイヨウネズ(杜松)の果実。ジンの香りの核となるボタニカルで、森を思わせる爽やかな香りを与えます。" },
+  { g:"カクテル", t:"ボタニカル", names:["ボタニカル"], def:"ジンなどの香りづけに使う植物素材の総称。ジュニパーベリーのほか、柑橘の皮、コリアンダー、山椒など蒸留所ごとに個性が出ます。" },
+  { g:"カクテル", t:"ビルド", names:["ビルド"], def:"氷を入れたグラスに直接材料を注いで混ぜる、最もシンプルなカクテル技法。ハイボールやジントニックはこれです。" },
+  { g:"カクテル", t:"ステア", names:["ステア"], def:"ミキシンググラスで氷と材料を静かに混ぜ、漉してグラスに注ぐ技法。マティーニなど、透明感を大切にするカクテルに使います。" },
+  { g:"カクテル", t:"シェイク", names:["シェイク"], def:"シェイカーに氷と材料を入れて振る技法。急速に冷やしながら空気を含ませ、混ざりにくい材料をまろやかに一体化させます。" },
+  { g:"カクテル", t:"ジンジャービア", names:["ジンジャービア"], def:"生姜を発酵させて造る、辛口で濃厚なジンジャー飲料(ノンアルコールが主流)。モスコミュールの正統なレシピに使われます。" },
+];
+
+/* 用語名 → GLOSSARYのindex(長い表記を優先してマッチ) */
+const TERM_LOOKUP = {};
+GLOSSARY.forEach((e, i) => e.names.forEach(n => { TERM_LOOKUP[n] = i; }));
+const TERM_RE = new RegExp(
+  Object.keys(TERM_LOOKUP).sort((a, b) => b.length - a.length).join("|"), "g");
+
+/* エスケープ済みテキスト内の用語をタップ可能なリンクにする */
+function linkTerms(escapedText, excludeNames) {
+  return escapedText.replace(TERM_RE, m =>
+    (excludeNames && excludeNames.has(m))
+      ? m
+      : `<span class="term" data-ti="${TERM_LOOKUP[m]}">${m}</span>`);
+}
+
+/* 出題中の問題文では「答えがバレる用語」をリンクから除外する:
+   ・問題文の「」内に登場する用語(定義そのものを問う問題)
+   ・用語名や解説文が正解の選択肢と重なる用語 */
+function excludeForQuestion(q) {
+  const ex = new Set();
+  const c0 = q.c[0];
+  const quoted = (q.q.match(/「[^」]*」/g) || []).join("");
+  for (const name of Object.keys(TERM_LOOKUP)) {
+    const def = GLOSSARY[TERM_LOOKUP[name]].def;
+    if (quoted.includes(name) || c0.includes(name) || name.includes(c0) || def.includes(c0)) {
+      ex.add(name);
+    }
+  }
+  return ex;
+}
+
+/* ============================================================
+   データ:きほんノート(学習レッスン)
+   ============================================================ */
+const LESSONS = {
+  basic: [
+    { t: "お酒は大きく3種類", b: "①醸造酒:酵母で発酵させただけのお酒(ビール・ワイン・日本酒)。②蒸留酒:醸造酒を蒸留してアルコールを濃くしたお酒(ウイスキー・焼酎・ジンなど)。③混成酒:お酒に果実や糖などを加えたもの(梅酒・リキュール)。この3分類が全ての基本です。" },
+    { t: "発酵ってなに?", b: "酵母(微生物)が糖を食べて、アルコールと炭酸ガスに変えることです。ブドウの糖ならワイン、麦の糖ならビール、米の糖なら日本酒になります。つまりお酒づくりの主役は酵母です。" },
+    { t: "蒸留ってなに?", b: "発酵させた液体を加熱し、水より先に蒸発するアルコールを集めて濃縮する技術です。度数の低い醸造酒から、40%を超える強いお酒が生まれます。" },
+    { t: "度数のめやす", b: "ビール約5%、ワイン約12%、日本酒約15%、焼酎約25%、ウイスキー約40%。「アルコール度数5%」は飲み物の5%がアルコールという意味です。同じ1杯でも強さが全く違うことを覚えておきましょう。" },
+    { t: "適量を知ろう", b: "日本の指標では、1日の適量は純アルコール約20g=ビール中瓶1本・日本酒1合・ワイングラス2杯弱。お酒と一緒に水(チェイサー)を飲み、週に休肝日を作るのが上手な付き合い方です。なお女性や体質的にお酒に弱い人は、これより少なめが目安です。" },
+    { t: "おいしく飲むコツ", b: "①色や外観を見る ②香りをかぐ ③少量を口に含んで味わい、余韻を楽しむ。この3ステップはどのお酒にも共通するテイスティングの基本です。料理との組み合わせ(ペアリング)を考え始めると、一気に世界が広がります。" },
+  ],
+  beer: [
+    { t: "原料はたった4つ", b: "麦芽(発芽させた大麦)・ホップ・水・酵母。麦芽が甘みのもと、ホップが苦味と香りのもとです。ホップには雑菌を抑えてビールを長持ちさせる働きもあります。" },
+    { t: "エールとラガー", b: "ビールは酵母で2系統に分かれます。エール=上面発酵・常温寄りで発酵、香り豊か。ラガー=下面発酵・低温で発酵、すっきりゴクゴク系。日本の大手ビールはほぼ全てラガー(ピルスナー)です。" },
+    { t: "スタイル早見表", b: "ピルスナー:黄金色でキレのあるラガー/ペールエール:香り豊かな定番エール/IPA:ホップどっさりで苦くて華やか/ヴァイツェン:小麦のビール、バナナ香/スタウト:黒くて香ばしい。まずこの5つを覚えれば会話に困りません。" },
+    { t: "クラフトビールとは", b: "小規模・独立系の醸造所が個性を大切に造るビールのこと。日本にも900以上のブルワリーがあり、フルーティなIPAや酸っぱいサワーエールなど、大手にはない多彩な味に出会えます。" },
+    { t: "ラベルの読み方", b: "ABV=アルコール度数(ビールは4〜10%程度)。IBU=苦味の単位(ラガー10〜25、IPAは40以上も)。この2つが読めるとスタイル選びがぐっと楽になります。" },
+    { t: "おいしく注ぐ", b: "泡はビールのフタ。炭酸と香りを守り、酸化を防ぎます。グラスに泡3:液7が黄金比。ピルスナー系は4〜8℃、香りを楽しむエールは少し高め(8〜13℃)が飲み頃です。" },
+  ],
+  sake: [
+    { t: "原料は米・米麹・水", b: "日本酒は米のお酒。ただし米のデンプンはそのままでは発酵できないため、麹(こうじ)菌がデンプンを糖に分解し、その糖を酵母がアルコールに変えます。「一麹、二酛、三造り」と言われるほど麹が重要です。" },
+    { t: "ラベルの「純米」と「大吟醸」", b: "米と米麹だけ=「純米」系、醸造アルコールを少量加えた=「本醸造」「吟醸」系。米をよく磨く(精米歩合が低い)ほど「吟醸」「大吟醸」と名乗れて、雑味の少ない華やかな味になります。純米大吟醸=米だけ+50%以下まで磨いた最高クラス。" },
+    { t: "味わいは4タイプ", b: "薫酒(くんしゅ):香り華やか・大吟醸系/爽酒(そうしゅ):軽快でスッキリ・生酒や本醸造/醇酒(じゅんしゅ):米の旨味どっしり・純米系/熟酒(じゅくしゅ):熟成させた琥珀色の個性派。迷ったらこの4タイプで好みを伝えましょう。" },
+    { t: "温度で七変化", b: "日本酒は5℃〜55℃まで楽しめる世界でも珍しいお酒。冷酒はシャープに、ぬる燗(40℃)は旨味がふくらみます。雪冷え・花冷え・人肌燗・飛び切り燗など、温度ごとの風流な呼び名もあります。" },
+    { t: "「冷や」は常温のこと", b: "居酒屋で通っぽく聞こえる豆知識。冷蔵庫がなかった時代、燗をつけない酒=「冷や」でした。冷蔵した酒は「冷酒」と呼び分けます。生酒(火入れなし)はフレッシュですが要冷蔵です。" },
+  ],
+  wine: [
+    { t: "色の違いは造り方の違い", b: "赤=黒ブドウを果皮・種ごと発酵(渋味のもとタンニンが出る)。白=果汁だけを発酵(すっきり)。ロゼ=果皮を短時間だけ漬ける。スパークリング=炭酸ガスを閉じ込めたもの。原料は基本的にブドウだけです。" },
+    { t: "まず覚える品種6つ", b: "赤:カベルネ・ソーヴィニヨン(渋み濃厚)、ピノ・ノワール(繊細)、メルロー(まろやか)。白:シャルドネ(万能)、ソーヴィニヨン・ブラン(爽やか)、リースリング(華やか)。品種を覚えると味の予想ができるようになります。" },
+    { t: "ラベル用語のきほん", b: "ヴィンテージ=ブドウの収穫年。テロワール=畑の環境(土壌・気候)。ボディ=味の重さ(フル=濃厚、ライト=軽快)。シャンパンはシャンパーニュ地方産だけの特別なスパークリングです。" },
+    { t: "温度が命", b: "赤は14〜18℃(日本の室温では少し冷やす)、白は6〜12℃、スパークリングは5〜8℃。赤を冷やしすぎると渋く、白がぬるいとぼやけます。迷ったら「赤は少し冷やす、白はしっかり冷やす」。" },
+    { t: "開けた後は?", b: "空気に触れると酸化が進むので、栓をして冷蔵庫へ(赤も)。目安は2〜3日、スパークリングは当日中がベスト。少し置くと香りが開いておいしくなるワインもあり、変化も楽しみのうちです。" },
+  ],
+  whisky: [
+    { t: "ウイスキーとは", b: "穀物(大麦・トウモロコシなど)を発酵・蒸留し、木の樽で熟成させたお酒。蒸留したては無色透明で、琥珀色も香りの大半も樽の中で生まれます。度数は40%以上が一般的です。" },
+    { t: "モルト・グレーン・ブレンデッド", b: "モルト=大麦麦芽だけ(個性豊か)。グレーン=トウモロコシ等主体(穏やか)。ブレンデッド=両者を混ぜたもの(バランス型)。「シングルモルト」は単一蒸留所のモルトだけ、という意味です。" },
+    { t: "世界5大ウイスキー", b: "スコットランド(スコッチ)・アイルランド・アメリカ(バーボン等)・カナダ・日本。スコッチはスモーキーなものも、バーボンは甘くバニラ様、日本は繊細でバランス型と、産地ごとに個性があります。" },
+    { t: "飲み方いろいろ", b: "ストレート:そのまま/ロック:氷で冷やしながら/ハイボール:ソーダ割り(1:4が目安)/トワイスアップ:常温の水と1:1で香りが開く、プロのテイスティング方式。初心者はハイボールから入るのがおすすめです。" },
+    { t: "ラベルの年数の意味", b: "「12年」は瓶の中で最も若い原酒の熟成年数。熟成中は毎年数%が蒸発して失われ、これを「天使の分け前」と呼びます。長熟ほど高価なのはこのためです。" },
+  ],
+  cocktail: [
+    { t: "カクテルとは", b: "ベースのお酒+副材料(ジュース・リキュール・ソーダなど)を混ぜた飲み物。ベースの4大スピリッツ=ジン・ウォッカ・ラム・テキーラを覚えると、メニューの見通しが一気に良くなります。" },
+    { t: "4大スピリッツの個性", b: "ジン:ジュニパーベリーの香草香(ジントニック)。ウォッカ:クセがなく万能(モスコミュール)。ラム:サトウキビの甘い香り(モヒート)。テキーラ:アガベ由来の力強さ(マルガリータ)。" },
+    { t: "基本の作り方は3つ", b: "ビルド:グラスに直接注いで混ぜる(ハイボール等)。ステア:氷と混ぜて漉す(マティーニ)。シェイク:振って急冷し、混ざりにくい材料をまろやかに一体化(ダイキリ等)。ミキサーで混ぜる「ブレンド」を加えて4技法と数えることもあります。" },
+    { t: "ショートとロング", b: "ショートカクテル:小さなグラスで氷なし、強めを冷たいうちに(マティーニ)。ロングカクテル:氷入りの大きなグラスでゆっくり(ジントニック)。度数もショートの方が高めです。" },
+    { t: "バーでの頼み方", b: "「甘め/さっぱり」「強め/弱め」「好きな果物」を伝えれば、バーテンダーが合う1杯を作ってくれます。迷ったら度数低めのロングから。1杯目におすすめなのはジントニックやモスコミュールです。" },
+  ],
+};
+
+/* ============================================================
+   データ:問題
+   q: 問題文 / c: 選択肢(先頭が正解) / d: 難易度1-3 / exp: 解説
+   ※IDは「カテゴリ内の並び順」から自動生成されるため、
+     問題の追加は各カテゴリの末尾に行うこと(進捗が保たれる)
+   ============================================================ */
+const QUESTIONS = [
+  /* ---------- お酒のきほん ---------- */
+  { cat:"basic", d:1, q:"ビール・ワイン・日本酒に共通するお酒の分類は?", c:["醸造酒","蒸留酒","混成酒","発泡酒"], exp:"酵母による発酵だけで造るお酒が醸造酒。ビール(麦)、ワイン(ブドウ)、日本酒(米)はすべてこの仲間で、度数は20%以下と比較的低めです。" },
+  { cat:"basic", d:1, q:"ウイスキーや焼酎のように、加熱してアルコールを濃縮したお酒の分類は?", c:["蒸留酒","醸造酒","混成酒","果実酒"], exp:"発酵させた液体を蒸留(加熱してアルコールを集める)したのが蒸留酒。ウイスキー、焼酎、ジン、ウォッカなどが仲間で、度数は焼酎で25%前後、ウイスキーでは40%以上と高めです。" },
+  { cat:"basic", d:1, q:"梅酒やリキュールが属するお酒の分類は?", c:["混成酒","醸造酒","蒸留酒","清酒"], exp:"お酒に果実・糖・香草などを加えたものが混成酒。梅酒は焼酎などに梅と氷砂糖を漬けた混成酒の代表です。" },
+  { cat:"basic", d:1, q:"「アルコール度数5%」の正しい意味は?", c:["飲み物の5%がアルコール","100mlに5gの糖分","5倍に薄めてある","アルコールの純度が5段階"], exp:"度数(%)は液体に占めるアルコールの割合。ビール(約5%)とウイスキー(約40%)では、同じ1口でも摂取するアルコール量が全く違います。" },
+  { cat:"basic", d:1, q:"酵母が糖を分解してアルコールを作るとき、同時に生まれるのは?", c:["炭酸ガス","酸素","塩分","カフェイン"], exp:"発酵の化学式は「糖 → アルコール + 炭酸ガス」。ビールやスパークリングワインの泡は、この発酵で生まれた炭酸ガスです。" },
+  { cat:"basic", d:1, q:"次のうち、一般的にアルコール度数が最も高いのは?", c:["ウイスキー","ビール","ワイン","日本酒"], exp:"目安はビール5%、ワイン12%、日本酒15%、ウイスキー40%。蒸留酒であるウイスキーが圧倒的に高く、ストレートで飲むなら少量ずつが基本です。" },
+  { cat:"basic", d:1, q:"「チェイサー」とは何のこと?", c:["お酒と交互に飲む水など","強いお酒のおかわり","締めの一杯","乾杯の掛け声"], exp:"チェイサー(chaser=追いかけるもの)は、強いお酒と交互に飲む水やソーダのこと。悪酔いを防ぎ、味覚もリセットしてくれる、大人の飲み方の必需品です。" },
+  { cat:"basic", d:1, q:"日本でお酒が飲めるようになる年齢は?", c:["20歳","18歳","21歳","16歳"], exp:"日本では法律により飲酒は20歳から。成人年齢は18歳に引き下げられましたが、飲酒・喫煙は20歳のまま変わっていません。" },
+  { cat:"basic", d:1, q:"体内でアルコールの分解を主に担う臓器は?", c:["肝臓","胃","心臓","腎臓"], exp:"アルコールの約90%は肝臓で分解されます。分解スピードには限界があり個人差も大きいので、自分のペースで飲むことが大切です。" },
+  { cat:"basic", d:1, q:"「休肝日」とはどんな日?", c:["お酒を飲まず肝臓を休める日","肝臓の検査を受ける日","お酒を安く飲める日","二日酔いで休む日"], exp:"週に1〜2日お酒を飲まない日を作ると、肝臓の負担が減りアルコール依存の予防にもなります。お酒と長く付き合うための知恵です。" },
+  { cat:"basic", d:1, q:"空腹のままお酒を飲むのが良くない理由は?", c:["アルコールの吸収が速くなり酔いが回りやすい","味を感じなくなる","炭酸が抜けやすい","酔いにくくなり飲みすぎる"], exp:"空腹だとアルコールが小腸へ直行し、吸収が一気に進みます。先に食べ物(特にタンパク質や脂質)を入れておくと吸収が緩やかになります。" },
+  { cat:"basic", d:1, q:"ワインの原料は?", c:["ブドウ","リンゴ","米","麦"], exp:"ワインはブドウの果汁を発酵させたお酒。ブドウ自体に糖と水分が十分あるため、水を加えずに造れる珍しいお酒です。ちなみにリンゴのお酒はシードルです。" },
+  { cat:"basic", d:2, q:"次のうち「醸造酒」でないのは?", c:["焼酎","ビール","ワイン","日本酒"], exp:"焼酎は蒸留酒。日本酒(醸造酒)と焼酎(蒸留酒)は同じ和酒でも製法が根本的に違います。焼酎の度数が高いのは蒸留しているからです。" },
+  { cat:"basic", d:2, q:"500ml・度数5%の缶ビール1本に含まれる純アルコール量は約何g?", c:["約20g","約5g","約50g","約2.5g"], exp:"純アルコール量=容量×度数×0.8(比重)。500×0.05×0.8=20g。これがちょうど1日の適量の目安です(女性やお酒に弱い体質の人はより少なめに)。" },
+  { cat:"basic", d:2, q:"日本の酒税法で「お酒」と定義されるのはアルコール度数何%以上?", c:["1%以上","0.5%以上","3%以上","5%以上"], exp:"度数1%以上の飲料が法律上の「酒類」。市販のノンアルコール飲料が「0.00%」を強調するのは、1%未満でも微量に含まれる商品と区別するためです。" },
+  { cat:"basic", d:2, q:"日本酒と一緒に飲む水を粋に呼ぶと?", c:["和らぎ水","仕込み水","割り水","清め水"], exp:"日本酒版チェイサーが「和らぎ水(やわらぎみず)」。度数15%の日本酒をおいしく長く楽しむための名脇役で、酒蔵の仕込み水を出してくれる店もあります。" },
+  { cat:"basic", d:2, q:"二日酔いの主な原因とされる、アルコールの分解途中で生まれる物質は?", c:["アセトアルデヒド","乳酸","ブドウ糖","アンモニア"], exp:"アルコールは肝臓でアセトアルデヒド→酢酸の順に分解されます。毒性の強いアセトアルデヒドが残ると頭痛や吐き気に。分解酵素の強さは体質(遺伝)で決まります。" },
+  { cat:"basic", d:2, q:"お酒のテイスティングで、口に含む前にまずすることは?", c:["色や外観を見る","一気に飲む","氷を入れる","グラスを温める"], exp:"テイスティングの基本は「見る→香る→味わう」の3ステップ。色や透明度からも熟成度やスタイルの情報が読み取れます。どのお酒にも共通する作法です。" },
+
+  /* ---------- ビール ---------- */
+  { cat:"beer", d:1, q:"「IPA」の正式名称は?", c:["インディア・ペールエール","アイリッシュ・ペールエール","インペリアル・ピルスナーエール","アイス・ペールエール"], exp:"IPAはIndia Pale Aleの略。18世紀、英国からインドへの長い船旅にビールが耐えられるよう、防腐効果のあるホップを大量に使ったのが起源、という説が有名です。" },
+  { cat:"beer", d:1, q:"ビールの苦味と香りのもとになる原料は?", c:["ホップ","麦芽","酵母","コリアンダー"], exp:"ホップはアサ科のつる性植物。苦味・香りづけに加え、雑菌の繁殖を抑えてビールの保存性を高める役割もあります。" },
+  { cat:"beer", d:2, q:"エールとラガーを分ける最大の違いは?", c:["酵母の種類と発酵温度","麦芽の産地","ホップの量","アルコール度数"], exp:"エールは上面発酵酵母で常温寄り(15〜25℃)、ラガーは下面発酵酵母で低温(5〜10℃)発酵。エールは香り豊か、ラガーはすっきりした味になりやすいです。" },
+  { cat:"beer", d:2, q:"ピルスナーが誕生した国は?", c:["チェコ","ドイツ","ベルギー","イギリス"], exp:"1842年、チェコのピルゼン(プルゼニュ)で誕生。黄金色で透明感のあるラガーは世界中に広まり、現在世界で最も飲まれているスタイルの原型になりました。" },
+  { cat:"beer", d:1, q:"スタウトの黒い色はどこから来る?", c:["深く焙煎した麦芽(大麦)","黒ホップ","カラメル色素","黒糖"], exp:"スタウトはローストした大麦・麦芽を使うことで黒色とコーヒーのような香ばしさを持ちます。代表格はアイルランドのギネス。" },
+  { cat:"beer", d:2, q:"ヴァイツェンの主原料として大麦麦芽と併用されるのは?", c:["小麦麦芽","ライ麦","米","オーツ麦"], exp:"ヴァイツェン(Weizen)はドイツ語で「小麦」。小麦麦芽を50%以上使い、酵母由来のバナナやクローブのような香りが特徴です。" },
+  { cat:"beer", d:2, q:"ビールの苦味の強さを表す単位は?", c:["IBU","ABV","SRM","OG"], exp:"IBU(International Bitterness Units)は苦味の国際単位。ラガーは10〜25程度、IPAは40〜70以上になることも。数値が高いほど苦味が強い傾向です。" },
+  { cat:"beer", d:1, q:"ラベルにある「ABV」が表すのは?", c:["アルコール度数","苦味の強さ","色の濃さ","炭酸の強さ"], exp:"ABVはAlcohol By Volumeの略で、容量あたりのアルコール度数(%)。ビールはおよそ4〜10%、バーレイワインなど12%を超えるスタイルもあります。" },
+  { cat:"beer", d:2, q:"1516年にドイツで定められた「ビール純粋令」で認められた原料は?", c:["大麦・ホップ・水","大麦・米・水","小麦・ホップ・砂糖","大麦・ホップ・果実"], exp:"バイエルン公ヴィルヘルム4世が制定した世界最古級の食品法。当初は大麦・ホップ・水のみ(酵母は後に追加)。ドイツビールの品質を支えてきました。" },
+  { cat:"beer", d:3, q:"ベルギーで野生酵母による自然発酵で造られる伝統ビールは?", c:["ランビック","セゾン","デュベル","トラピスト"], exp:"ランビックはブリュッセル近郊で、空気中の野生酵母・乳酸菌により自然発酵させる酸味のあるビール。チェリーを漬けた「クリーク」も有名です。" },
+  { cat:"beer", d:2, q:"「ヘイジーIPA」の「ヘイジー(Hazy)」の意味は?", c:["濁った","強烈な","黄金の","冷たい"], exp:"Hazy=霞んだ・濁った。ろ過を抑え酵母やタンパク質を残すことで、濁った外観とジューシーでトロピカルな味わいを生むスタイル。NE(ニューイングランド)IPAとも呼ばれます。" },
+  { cat:"beer", d:3, q:"セゾンはもともとどんな人のために造られたビール?", c:["農家の労働者","王侯貴族","修道士","船乗り"], exp:"セゾンはベルギー・ワロン地方の農家が農閑期に仕込み、夏の農作業の水分補給として飲んだビール。スパイシーでドライな味わいが特徴です。" },
+  { cat:"beer", d:1, q:"ペールエールの「ペール」の意味は?", c:["(色が)淡い","苦い","古い","強い"], exp:"Pale=淡い。濃色ビールが主流だった時代に、淡色麦芽で造った明るい色のエールが「ペールエール」と呼ばれました。クラフトビールの定番スタイルです。" },
+  { cat:"beer", d:1, q:"世界で最も多く飲まれているビールのスタイル系統は?", c:["ラガー(ピルスナー系)","IPA","スタウト","ヴァイツェン"], exp:"世界のビール生産の大半はピルスナーを原型とするラガー。日本の大手ビールもほぼすべてこの系統です。" },
+  { cat:"beer", d:1, q:"ビールの主原料「麦芽(モルト)」とは、一般に何を発芽させたもの?", c:["大麦","小麦","ライ麦","トウモロコシ"], exp:"麦芽は大麦を発芽・乾燥させたもの。発芽により生まれる酵素がデンプンを糖に変え、その糖を酵母が食べてアルコールになります。" },
+  { cat:"beer", d:3, q:"塩とコリアンダーを使い、乳酸由来の酸味が特徴のドイツの伝統ビアスタイルは?", c:["ゴーゼ","ケルシュ","ボック","メルツェン"], exp:"ゴーゼ(Gose)はドイツ・ゴスラー発祥。塩とコリアンダーを加え、乳酸発酵による酸味を持つ独特なスタイルで、クラフトビール界で再評価されています。" },
+  { cat:"beer", d:1, q:"クラフトビールの「クラフト」が意味するのは?", c:["職人技・手工芸","小さい","地元の","新しい"], exp:"Craft=職人技。一般に小規模・独立系の醸造所が、伝統や革新を大切に個性豊かに造るビールを指します。日本では「地ビール」から発展した文化です。" },
+  { cat:"beer", d:1, q:"ビールを注ぐとき、泡が果たす役割は?", c:["フタになって炭酸と香りを守る","アルコールを強くする","苦味を消す","色を良くするだけ"], exp:"泡はビールのフタ。酸化と炭酸の抜けを防ぎ、香りを閉じ込めます。泡:液=3:7が黄金比とよく言われます。" },
+  { cat:"beer", d:3, q:"ケルシュはどの都市でしか名乗れないスタイル?", c:["ケルン","ミュンヘン","ベルリン","ハンブルク"], exp:"ケルシュはドイツ・ケルンの地域保護されたスタイル。上面発酵ながらラガーのように低温熟成させ、すっきり上品な味わいです。" },
+  { cat:"beer", d:3, q:"ホップの品種「シトラ」が持つ代表的な香りは?", c:["柑橘・トロピカルフルーツ","バラ","コーヒー","スモーク"], exp:"シトラ(Citra)はアメリカ産ホップの人気品種。グレープフルーツやマンゴーのような香りで、ヘイジーIPAなどの主役として世界中で愛されています。" },
+  { cat:"beer", d:1, q:"ピルスナー系ビールのおいしい飲み頃温度は?", c:["4〜8℃","0℃以下","15〜20℃","25℃前後"], exp:"すっきり系ラガーは4〜8℃でキレが最大に。一方、香りを楽しむエール系は8〜13℃とやや高めが向きます。冷やしすぎると香りが閉じてしまいます。" },
+  { cat:"beer", d:1, q:"日本で「生ビール」と表示できる条件は?", c:["熱処理をしていない","樽から注いでいる","工場直送である","ろ過していない"], exp:"日本の「生」は加熱殺菌(熱処理)をしていないビールのこと。缶や瓶でも熱処理していなければ「生ビール」です。樽かどうかは関係ありません。" },
+  { cat:"beer", d:2, q:"日本の酒税法上、「発泡酒」が「ビール」と区別される主なポイントは?", c:["麦芽の使用比率や副原料の範囲","炭酸の強さ","アルコール度数","泡の量"], exp:"日本では麦芽比率50%以上+規定の副原料で造ると「ビール」、それを外れると「発泡酒」に分類されます。海外では堂々と「ビール」であるスタイルが、日本では発泡酒表記になることもあります。" },
+  { cat:"beer", d:2, q:"ペールエールとIPAの主な違いは?", c:["IPAの方がホップが強く苦味・香りが濃い","IPAは黒い","ペールエールはラガーである","IPAは小麦を使う"], exp:"IPAはペールエールをベースに、ホップを大幅に増量したスタイル。より苦く、より香り高く、度数も高めになる傾向があります。" },
+  { cat:"beer", d:3, q:"「トラピストビール」と名乗るための条件は?", c:["修道院内で修道士の管理のもと醸造される","ベルギー産である","樽で3年熟成させる","野生酵母を使う"], exp:"国際トラピスト会修道士協会の認定が必要で、修道院の敷地内で修道士の監督下で醸造し、収益を修道院の維持と慈善に充てることが条件。世界に10前後しか存在しません。" },
+  { cat:"beer", d:3, q:"「ドライホッピング」とはどんな技法?", c:["発酵後の工程でホップを漬け込み香りを付ける","ホップを乾燥させる","ホップを煮込んで苦味を強める","ホップを使わずに造る"], exp:"煮沸せず発酵後(または発酵中)の低温段階でホップを投入する技法。苦味をあまり増やさずに、フレッシュな香りだけを最大限引き出せます。現代クラフトIPAの要です。" },
+  { cat:"beer", d:2, q:"「バーレイワイン」は何のお酒?", c:["度数の高いビール","大麦のワイン","ビールとワインのブレンド","麦焼酎"], exp:"Barley Wine=大麦のワイン、という名前ですが正真正銘のビール。度数8〜12%とワイン並みに強く、長期熟成も楽しめる重厚なスタイルです。" },
+
+  /* ---------- 日本酒 ---------- */
+  { cat:"sake", d:1, q:"純米酒の原料として正しい組み合わせは?", c:["米・米麹・水","米・砂糖・水","米・麦・水","米・酵母・アルコール"], exp:"純米酒は米・米麹・水のみで造る日本酒。醸造アルコールを加えたものは「本醸造」「吟醸」など別の分類になります。" },
+  { cat:"sake", d:2, q:"精米歩合50%以下・醸造アルコール無添加の酒が名乗れる、最上位の特定名称は?", c:["純米大吟醸酒","純米吟醸酒","特別純米酒","大吟醸酒"], exp:"米を半分以上磨き、米・米麹・水だけで造ると「純米大吟醸」。よく磨くほど雑味が減り、華やかでクリアな味になる傾向があります。" },
+  { cat:"sake", d:2, q:"日本酒度がプラスに大きいほど、味わいは一般的に?", c:["辛口","甘口","酸っぱい","苦い"], exp:"日本酒度は糖分などによる比重の指標。+が大きいほど糖が少なく辛口、−が大きいほど甘口の目安になります。" },
+  { cat:"sake", d:1, q:"日本酒造りにおける麹(こうじ)の役割は?", c:["米のデンプンを糖に分解する","アルコールを直接つくる","酸味を加える","色をつける"], exp:"麹菌の酵素が米のデンプンを糖化し、その糖を酵母がアルコールに変えます。「一麹、二酛(もと)、三造り」と言われるほど重要な工程です。" },
+  { cat:"sake", d:2, q:"「生酒(なまざけ)」とはどんな日本酒?", c:["火入れ(加熱殺菌)をしていない酒","搾りたての酒","濁っている酒","古酒"], exp:"通常2回行う火入れを一切しないのが生酒。フレッシュな風味が魅力ですが変化しやすいため、要冷蔵で扱われます。" },
+  { cat:"sake", d:2, q:"「酒米の王様」と呼ばれる品種は?", c:["山田錦","コシヒカリ","五百万石","雄町"], exp:"山田錦は兵庫県生まれの酒造好適米。粒が大きく心白があり高精米に耐えるため、大吟醸などに最適。全国の鑑評会でも圧倒的な使用率を誇ります。" },
+  { cat:"sake", d:2, q:"燗酒の「ぬる燗」はおよそ何℃?", c:["約40℃","約20℃","約55℃","約70℃"], exp:"ぬる燗は40℃前後。ほかに日向燗(30℃)、人肌燗(35℃)、上燗(45℃)、熱燗(50℃)、飛び切り燗(55℃以上)と、温度ごとに風流な呼び名があります。" },
+  { cat:"sake", d:3, q:"日本酒特有の「並行複発酵」とは?", c:["糖化と発酵が同じタンクで同時に進む","2種類の酵母を使う","2回発酵させる","発酵と蒸留を同時に行う"], exp:"麹による糖化と酵母による発酵が同時進行するのが並行複発酵。醸造酒として世界的に高いアルコール度数(原酒で20%前後)を生み出せる理由です。" },
+  { cat:"sake", d:2, q:"吟醸酒の華やかな「吟醸香」に多いとされる香りは?", c:["リンゴやバナナのような果実香","ヒノキの香り","バターの香り","スモーキーな香り"], exp:"吟醸香の正体は酵母が生む香気成分(カプロン酸エチル=リンゴ様、酢酸イソアミル=バナナ様)。低温長期発酵によって引き出されます。" },
+  { cat:"sake", d:1, q:"「杜氏(とうじ)」とは?", c:["酒造りの最高責任者","酒蔵の経営者","米を作る農家","酒を運ぶ商人"], exp:"杜氏は蔵人を率いて酒造りを指揮する最高技術責任者。南部杜氏(岩手)、越後杜氏(新潟)、但馬杜氏(兵庫)などの流派があります。" },
+  { cat:"sake", d:1, q:"にごり酒が白く濁っている理由は?", c:["もろみを目の粗い布などで濾しているから","牛乳を加えているから","発酵していないから","米粉を後から加えるから"], exp:"にごり酒は、発酵中のもろみを粗く濾すことで米や麹の微細な固形分を残したもの。とろりとした口当たりと米の旨味が楽しめます。" },
+  { cat:"sake", d:3, q:"精米歩合60%以下・醸造アルコール添加ありの酒が名乗れる、最上位の特定名称は?", c:["吟醸酒","本醸造酒","純米吟醸酒","普通酒"], exp:"精米歩合60%以下+醸造アルコール少量添加は「吟醸酒」。同条件でアルコール無添加なら「純米吟醸酒」、精米歩合70%以下なら「本醸造酒」です。" },
+  { cat:"sake", d:3, q:"日本酒の仕込み水に多く求められる性質は?", c:["鉄分が少ないこと","炭酸を含むこと","塩分を含むこと","濁っていること"], exp:"鉄分は酒を着色させ風味を損なうため大敵。名水地に銘醸地が多いのはこのため。灘の「宮水」はミネラル豊富な硬水として有名です。" },
+  { cat:"sake", d:3, q:"酒袋から自然に滴る雫だけを集める贅沢な搾り方を何と呼ぶ?", c:["雫取り(袋吊り)","荒走り","責め","おりがらみ"], exp:"もろみを袋に入れて吊るし、圧力をかけず自然に落ちる雫だけを集めるのが雫取り(袋吊り)。鑑評会出品酒などに使われる最高級の搾り方です。" },
+  { cat:"sake", d:1, q:"日本酒の別名「清酒」の由来は?", c:["濾して澄んだ(清い)酒だから","清い水で造るから","神事に使うから","冷やして飲むから"], exp:"もろみを濾して澄んだ酒=清酒。濾さない、または粗く濾したものが「どぶろく」や「にごり酒」です。法律上も日本酒の正式名称は清酒です。" },
+  { cat:"sake", d:1, q:"日本酒のアルコール度数はおよそ?", c:["15%前後","5%前後","25%前後","40%前後"], exp:"日本酒は15%前後が標準。ビール(約5%)やワイン(約12%)より高く、醸造酒としては世界最高クラスの度数です。" },
+  { cat:"sake", d:2, q:"日本酒の注文で「冷や(ひや)」が本来指すのは?", c:["常温","キンキンに冷えた酒","少しだけ温めた酒","氷を入れた酒"], exp:"冷蔵庫がない時代、「燗をつけない=冷や」でした。つまり本来の冷やは常温のこと。冷蔵した酒は「冷酒」と呼び分けます。知っていると通な豆知識です。" },
+  { cat:"sake", d:2, q:"搾りの工程で最初に出てくる部分を何と呼ぶ?", c:["あらばしり","なかどり","せめ","おりさげ"], exp:"搾りはじめの「あらばしり」は微発泡感のあるフレッシュな味。中盤の「中取り(なかどり)」は最もバランスが良いとされ、最後の「責め」は濃い味わいになります。" },
+  { cat:"sake", d:3, q:"「生酛(きもと)造り」の特徴は?", c:["自然の乳酸菌を取り込んで酒母を育てる","加熱殺菌を2回行う","人工の乳酸を添加する","麹を使わない"], exp:"蔵に住み着く天然の乳酸菌を取り込み、時間をかけて酒母(酛)を育てる伝統製法。手間はかかりますが、複雑でコクのある味わいが生まれます。明治期に考案された乳酸添加の「速醸酛」が現在の主流です。" },
+  { cat:"sake", d:3, q:"「山廃仕込み」は生酛造りから何を廃止したもの?", c:["山卸(米をすりつぶす作業)","火入れ","精米","木桶"], exp:"山卸(やまおろし)は蔵人が櫂で蒸米をすりつぶす重労働。麹の酵素で自然に溶けると分かり、これを廃止したのが「山卸廃止酛」=山廃。生酛系らしい濃醇な味わいは健在です。" },
+  { cat:"sake", d:2, q:"スパークリング日本酒の泡のもとは?", c:["発酵で生まれる炭酸ガス(または後から充填)","泡立て器で立てた泡","石鹸成分","米のとぎ汁"], exp:"瓶内二次発酵タイプは酵母が生む炭酸ガスをそのまま閉じ込めたもの。シャンパンと同じ原理です。手軽な炭酸ガス充填タイプもあります。" },
+  { cat:"sake", d:2, q:"長期熟成させた日本酒「熟成古酒」の色の変化は?", c:["琥珀色に色づく","真っ白になる","青みがかる","変化しない"], exp:"3年以上熟成させた古酒は、糖とアミノ酸の反応(メイラード反応)で琥珀色に色づき、カラメルやドライフルーツのような複雑な香りをまといます。紹興酒に似た趣の和のヴィンテージ酒です。" },
+
+  /* ---------- ワイン ---------- */
+  { cat:"wine", d:1, q:"赤ワインの渋味のもとになる成分は?", c:["タンニン","クエン酸","カフェイン","カプサイシン"], exp:"タンニンはブドウの果皮や種子、樽に由来するポリフェノール。赤ワインは果皮ごと発酵させるため渋味が生まれ、熟成による変化も楽しめます。" },
+  { cat:"wine", d:1, q:"「シャンパン」と名乗れるスパークリングワインの条件は?", c:["仏シャンパーニュ地方産で規定の製法","炭酸が強いこと","白ブドウだけで造ること","フランス産であること"], exp:"シャンパーニュ地方産で、瓶内二次発酵など厳格な規定を満たしたものだけがシャンパン。他の産地のものはスパークリングワインと呼ばれます。" },
+  { cat:"wine", d:2, q:"ボジョレー・ヌーヴォーに使われるブドウ品種は?", c:["ガメイ","ピノ・ノワール","メルロー","シラー"], exp:"ボジョレー・ヌーヴォーはガメイ種100%の新酒。毎年11月第3木曜日に解禁され、フレッシュで軽やかな味わいが特徴です。" },
+  { cat:"wine", d:2, q:"次のうち白ワイン用の代表品種は?", c:["シャルドネ","カベルネ・ソーヴィニヨン","ピノ・ノワール","テンプラニーリョ"], exp:"シャルドネは世界中で栽培される白の女王。産地や樽使いで、シャブリのようにキリッとした味からバターのような濃厚な味まで幅広く変化します。" },
+  { cat:"wine", d:1, q:"ワインの「フルボディ」が意味するのは?", c:["コクがあり重厚な味わい","甘口であること","炭酸が強いこと","アルコールが弱いこと"], exp:"ボディは味の厚み・重さの表現。フルボディは渋味やコクがしっかりした重厚なタイプ、ライトボディは軽快なタイプを指します。" },
+  { cat:"wine", d:2, q:"貴腐ワインが極上の甘口になる理由は?", c:["貴腐菌が水分を蒸発させ糖が凝縮するから","砂糖を加えるから","氷点下で収穫するから","蜂蜜を混ぜるから"], exp:"貴腐菌(ボトリティス・シネレア)が果皮に付くと水分が抜け、糖と香りが凝縮。ソーテルヌ、トカイ、トロッケンベーレンアウスレーゼが世界三大貴腐ワインです。" },
+  { cat:"wine", d:2, q:"デキャンタージュを行う主な目的は?", c:["空気に触れさせ香りを開かせ、澱を取り除く","冷やすため","炭酸を加えるため","量を増やすため"], exp:"ワインをデキャンタに移すことで酸素に触れて香りが開き、瓶底の澱(おり)も分離できます。若い赤ワインや熟成古酒に効果的です。" },
+  { cat:"wine", d:2, q:"ロゼワインの一般的な造り方は?", c:["黒ブドウの果皮を短時間だけ漬けて引き上げる","赤と白を混ぜる","白ブドウを長く漬ける","加熱して色を出す"], exp:"主流はセニエ法など、黒ブドウの果皮接触を短時間にして淡いピンク色を得る製法。ちなみにEUでは赤白ブレンドのロゼは原則禁止です(シャンパーニュを除く)。" },
+  { cat:"wine", d:2, q:"ワイン用語「テロワール」が指すのは?", c:["気候・土壌などブドウ畑を取り巻く環境","ワインの熟成年数","ブドウの品種","醸造家の技術"], exp:"テロワール(terroir)は土壌・気候・地形などの生育環境の総体。同じ品種でも畑が違えば味が変わる——ワインの奥深さの核心です。" },
+  { cat:"wine", d:2, q:"ピノ・ノワールの聖地と呼ばれるフランスの産地は?", c:["ブルゴーニュ","ボルドー","アルザス","プロヴァンス"], exp:"ブルゴーニュは赤=ピノ・ノワール、白=シャルドネの単一品種主義。ロマネ・コンティもこの地のピノ・ノワールから生まれます。ボルドーはブレンド主義で対照的です。" },
+  { cat:"wine", d:3, q:"スペイン産の伝統的スパークリングワインは?", c:["カヴァ","プロセッコ","ゼクト","フランチャコルタ"], exp:"カヴァはスペイン(主にカタルーニャ)産。シャンパンと同じ瓶内二次発酵で造られながら手頃な価格で楽しめます。プロセッコはイタリア、ゼクトはドイツです。" },
+  { cat:"wine", d:1, q:"ワインの「ヴィンテージ」とは?", c:["ブドウが収穫された年","瓶詰めされた年","発売された年","飲み頃の年"], exp:"ヴィンテージは収穫年。その年の天候がブドウの出来を左右するため、同じワインでも年によって味と評価が変わります。" },
+  { cat:"wine", d:2, q:"赤ワインの適温として一般的にすすめられるのは?", c:["14〜18℃","4〜6℃","25〜30℃","0℃以下"], exp:"赤ワインは冷やしすぎると渋味が際立つため14〜18℃程度が目安。「常温で」は涼しいヨーロッパの室温が基準なので、日本の夏は少し冷やすのが正解です。" },
+  { cat:"wine", d:1, q:"白ワインをおいしく飲む温度の目安は?", c:["6〜12℃(しっかり冷やす)","20〜25℃","14〜18℃","0℃以下で凍らせる"], exp:"白ワインは冷やすことで酸味が引き締まりフレッシュに。甘口やコクのあるタイプはやや高め(10〜12℃)にすると香りが楽しめます。" },
+  { cat:"wine", d:1, q:"スパークリングワインの泡の正体は?", c:["炭酸ガス(二酸化炭素)","酸素","窒素","水蒸気"], exp:"発酵で生まれた炭酸ガスをワインに閉じ込めたもの。シャンパンは瓶の中で二次発酵させ、きめ細かい泡を生み出します。" },
+  { cat:"wine", d:1, q:"赤ワインと白ワインの製法の最大の違いは?", c:["赤は果皮や種ごと発酵させる","赤は加熱する","白は砂糖を加える","白はブドウを使わない"], exp:"赤は黒ブドウを果皮・種ごと発酵させるので色と渋味が出ます。白は基本的に果汁だけを発酵。黒ブドウから白ワインを造ることも可能です(シャンパンのブラン・ド・ノワールなど)。" },
+  { cat:"wine", d:1, q:"レストランでワインの提案やサービスをする専門家を何と呼ぶ?", c:["ソムリエ","バリスタ","パティシエ","マイスター"], exp:"ソムリエはワインの仕入れ・管理・提案のプロ。予算と好みを伝えれば最適な1本を選んでくれます。「渋くないのが好き」くらいのざっくりした伝え方でも大丈夫です。" },
+  { cat:"wine", d:2, q:"「オレンジワイン」とはどんなワイン?", c:["白ブドウを果皮ごと漬け込んで造るワイン","オレンジを混ぜたワイン","オレンジ色に着色したワイン","みかんのお酒"], exp:"白ブドウを赤ワインのように果皮ごと発酵させると、琥珀(オレンジ)色のワインに。ジョージアで8000年前から続く製法が近年世界的に再流行しています。果物のオレンジは無関係です。" },
+  { cat:"wine", d:3, q:"「マロラクティック発酵」がワインにもたらす効果は?", c:["酸味がまろやかになる","渋味が強くなる","炭酸が生まれる","色が濃くなる"], exp:"乳酸菌がシャープなリンゴ酸をまろやかな乳酸に変える二次的発酵。ほとんどの赤ワインと、樽熟成シャルドネなどで行われ、バターのような風味も生まれます。" },
+  { cat:"wine", d:3, q:"ボルドー・メドック格付け(1855年制定)で、現在第1級とされるシャトーはいくつ?", c:["5つ","3つ","10個","1つだけ"], exp:"ラフィット、ラトゥール、マルゴー、オー・ブリオンの4つに、1973年に昇格したムートンを加えた5シャトー。「5大シャトー」としてワイン愛好家の憧れです。" },
+  { cat:"wine", d:3, q:"ワインボトルの底にあるくぼみ「パント」の主な役割は?", c:["澱を底の縁に集め、瓶の強度も高める","容量を少なく見せる伝統","ワインを早く冷やすため","ラベルを貼りやすくするため"], exp:"パント(punt)は澱を周縁に集めて注ぐときに舞い上がりにくくし、瓶の耐圧強度も高めます(特にスパークリング)。サービスで瓶を持つとき親指を掛ける場所でもあります。" },
+  { cat:"wine", d:3, q:"世界三大貴腐ワインのひとつ「トカイ」を産する国は?", c:["ハンガリー","フランス","ドイツ","イタリア"], exp:"トカイはハンガリー北東部の銘醸地。ルイ14世が「王の酒にして酒の王」と讃えたと伝わる甘口貴腐ワインで、ソーテルヌ(仏)、トロッケンベーレンアウスレーゼ(独)と並び称されます。" },
+
+  /* ---------- ウイスキー ---------- */
+  { cat:"whisky", d:2, q:"スコッチウイスキーに義務付けられた最低熟成年数は?", c:["3年","1年","5年","10年"], exp:"スコッチは英国法でオーク樽3年以上の熟成が義務。スコットランドで蒸留・熟成されたものだけが名乗れます。" },
+  { cat:"whisky", d:2, q:"バーボンウイスキーの主原料(51%以上)は?", c:["トウモロコシ","大麦","ライ麦","小麦"], exp:"バーボンはトウモロコシ51%以上・アメリカ製造などが法律で定められた条件。甘くバニラのような香りが特徴です。" },
+  { cat:"whisky", d:2, q:"「シングルモルト」の意味は?", c:["単一蒸留所の麦芽100%ウイスキー","1種類の樽で熟成","1年だけ熟成","1回だけ蒸留"], exp:"シングル=単一の蒸留所、モルト=大麦麦芽のみ。蒸留所ごとの個性がそのまま味に出るため、飲み比べの楽しみがあります。" },
+  { cat:"whisky", d:2, q:"アイラモルトの代名詞ともいえる香りは?", c:["ピート(スモーキー)香","バラの香り","バナナの香り","ミントの香り"], exp:"スコットランドのアイラ島では麦芽の乾燥にピート(泥炭)を焚くため、薬品や煙を思わせる強烈なスモーキーフレーバーが生まれます。ラフロイグやアードベッグが有名。" },
+  { cat:"whisky", d:2, q:"「世界5大ウイスキー」に含まれない国は?", c:["メキシコ","スコットランド","日本","カナダ"], exp:"5大ウイスキーはスコットランド・アイルランド・アメリカ・カナダ・日本。メキシコはテキーラの国です。" },
+  { cat:"whisky", d:1, q:"ウイスキーの琥珀色は主に何によって生まれる?", c:["樽での熟成","麦芽の色","着色料","水の色"], exp:"蒸留したての原酒は無色透明。オーク樽で長い年月を過ごすうちに、樽の成分が溶け込んで琥珀色と複雑な香味が生まれます。" },
+  { cat:"whisky", d:2, q:"熟成中に蒸発して失われるウイスキーを何と呼ぶ?", c:["エンジェルズシェア(天使の分け前)","デビルズカット","ゴーストバレル","ドラゴンズブレス"], exp:"樽熟成中、年に数%ずつ蒸発して減っていく分を「天使の分け前」と呼びます。天使が味見した分だけ美酒になる、という洒落た言い伝えです。" },
+  { cat:"whisky", d:1, q:"ハイボールはウイスキーを何で割ったもの?", c:["炭酸水","トニックウォーター","ジンジャーエール","牛乳"], exp:"ハイボールはウイスキーのソーダ割り。1:3〜1:4が黄金比とされ、氷を入れたグラスに静かにソーダを注ぎ、混ぜすぎないのがコツです。" },
+  { cat:"whisky", d:2, q:"日本初の本格ウイスキー蒸溜所は?", c:["山崎蒸溜所","余市蒸溜所","白州蒸溜所","知多蒸溜所"], exp:"1923年、鳥井信治郎が大阪府山崎に建設。初代所長は後にニッカを創業する竹鶴政孝。日本のウイスキーの歴史はここから始まりました。" },
+  { cat:"whisky", d:1, q:"モルトウイスキーの原料は?", c:["大麦麦芽","トウモロコシ","米","ジャガイモ"], exp:"モルトウイスキーは大麦麦芽(モルト)のみが原料。トウモロコシなど他の穀物主体のものはグレーンウイスキーと呼ばれ、両者を混ぜるとブレンデッドになります。" },
+  { cat:"whisky", d:3, q:"バーボンの熟成に使う樽の条件は?", c:["内側を焦がした新品のオーク樽","使い古したシェリー樽","杉の樽","ステンレスタンク"], exp:"バーボンは新品のオーク樽の内側を焦がして(チャーリング)使うのが法律上の義務。この焦げがバニラやキャラメルの甘い香りを生みます。使用済み樽はスコッチ等の熟成に再利用されます。" },
+  { cat:"whisky", d:3, q:"ウイスキーに常温の水を1:1で加える飲み方「トワイスアップ」の目的は?", c:["香りを開かせる","度数を上げる","色を濃くする","炭酸を加える"], exp:"加水するとアルコールの刺激が和らぎ、香り成分が揮発しやすくなります。ブレンダーがテイスティングで使う、香りを最大限楽しむための飲み方です。" },
+  { cat:"whisky", d:1, q:"ウイスキーのアルコール度数はおよそ?", c:["40〜46%","5〜8%","12〜15%","90%以上"], exp:"瓶詰めされるウイスキーは40〜46%が主流。ビール(5%)の8倍以上の強さなので、ストレートならチェイサーを忘れずに。" },
+  { cat:"whisky", d:1, q:"ウイスキーとよく似た琥珀色のお酒「ブランデー」の主な原料は?", c:["ブドウなどの果実","大麦","トウモロコシ","ジャガイモ"], exp:"ブランデーは果実のお酒(主にワイン)を蒸留したもの。穀物ならウイスキー、サトウキビならラム。「何を発酵させて蒸留したか」で蒸留酒の名前が決まります。" },
+  { cat:"whisky", d:2, q:"「ブレンデッドウイスキー」とは?", c:["モルトとグレーンを混ぜたもの","2つの国のウイスキーを混ぜたもの","水で割ってあるもの","2回熟成させたもの"], exp:"個性的なモルト原酒と穏やかなグレーン原酒をブレンドしたもの。バランスが良く飲みやすいのが持ち味で、世界で飲まれるスコッチの大半はブレンデッドです。" },
+  { cat:"whisky", d:2, q:"シェリー樽で熟成したウイスキーに現れやすい風味は?", c:["レーズンやドライフルーツのような甘い風味","強い塩味","ミントの清涼感","炭酸の刺激"], exp:"シェリー酒が染み込んだ樽で熟成すると、レーズンやチョコレートを思わせる甘く濃厚な風味に。バーボン樽熟成のバニラ・蜂蜜系と並ぶ2大樽個性です。" },
+  { cat:"whisky", d:3, q:"「カスクストレングス」とはどんなウイスキー?", c:["加水せず樽出しの度数のまま瓶詰めしたもの","樽を使わず熟成させたもの","炭酸入りのウイスキー","度数を40%に調整したもの"], exp:"通常は加水して40〜46%に調整しますが、カスクストレングスは樽から出したまま(50〜60%台)瓶詰め。樽の個性を原液のまま味わえる、上級者向けのスタイルです。" },
+  { cat:"whisky", d:3, q:"アイリッシュウイスキーの伝統的な蒸留回数は?", c:["3回","1回","2回","5回"], exp:"スコッチの多くが2回蒸留なのに対し、アイルランドは伝統的に3回蒸留。雑味が少なくスムーズで軽やかな飲み口になり、初心者にもおすすめです。" },
+  { cat:"whisky", d:3, q:"スコッチの分類「ブレンデッドモルト」とは?", c:["複数蒸留所のモルト原酒だけを混ぜたもの","モルトとグレーンを混ぜたもの","1つの蒸留所の複数の樽を混ぜたもの","スコッチとバーボンを混ぜたもの"], exp:"ブレンデッドモルトは複数蒸留所のモルト原酒のみをブレンドしたもの(旧称ヴァッテッドモルト)。グレーンを含む通常のブレンデッドウイスキーとは区別されます。" },
+
+  /* ---------- カクテル ---------- */
+  { cat:"cocktail", d:2, q:"ジンの香りづけに欠かせない素材は?", c:["ジュニパーベリー(杜松の実)","バニラビーンズ","カカオ豆","山椒"], exp:"ジンはジュニパーベリーで香りづけした蒸留酒。近年は各地の植物(ボタニカル)を使った個性豊かなクラフトジンが世界的ブームです。" },
+  { cat:"cocktail", d:1, q:"モヒートのベースとなるスピリッツは?", c:["ラム","ジン","ウォッカ","テキーラ"], exp:"モヒートはキューバ生まれ。ラムにミント、ライム、砂糖、ソーダを合わせた爽快なカクテルで、文豪ヘミングウェイが愛したという伝説でも有名です。" },
+  { cat:"cocktail", d:2, q:"マルガリータのベースは?", c:["テキーラ","ラム","ジン","ブランデー"], exp:"マルガリータはテキーラ+オレンジリキュール+ライム。グラスの縁に塩をつける「スノースタイル」が特徴です。" },
+  { cat:"cocktail", d:2, q:"テキーラの原料となる植物は?", c:["アガベ(リュウゼツラン)","サボテン","トウモロコシ","ヤシ"], exp:"テキーラはブルーアガベという多肉植物の茎を原料に、メキシコの特定地域で造られる蒸留酒。サボテンが原料というのはよくある誤解です。" },
+  { cat:"cocktail", d:2, q:"世界4大スピリッツは、ジン・ウォッカ・ラムとあと1つは?", c:["テキーラ","ウイスキー","ブランデー","焼酎"], exp:"カクテルのベースとなる4大スピリッツはジン・ウォッカ・ラム・テキーラ。それぞれ原料や製法が異なり、カクテルの個性を決めます。" },
+  { cat:"cocktail", d:2, q:"「カクテルの王様」と呼ばれるのは?", c:["マティーニ","マンハッタン","ダイキリ","ギムレット"], exp:"ジン+ドライベルモットのマティーニは「カクテルの王様」。ちなみに「女王」はウイスキーベースのマンハッタンと呼ばれます。" },
+  { cat:"cocktail", d:3, q:"モスコミュールの正統なレシピで使うのは、ウォッカ・ライムと?", c:["ジンジャービア","コーラ","トニックウォーター","ソーダ"], exp:"本来はジンジャービア(発酵ジンジャー飲料)を使い、銅製マグで飲むのが伝統。日本ではジンジャーエールで作るのが一般的になっています。" },
+  { cat:"cocktail", d:2, q:"カンパリの味の最大の特徴は?", c:["ハーブ由来のほろ苦さ","強い甘さ","塩味","酸味"], exp:"カンパリはイタリア生まれのビター系リキュール。数十種のハーブによる鮮烈な苦味が特徴で、ソーダ割りやネグローニに使われます。" },
+  { cat:"cocktail", d:3, q:"トニックウォーターの苦味成分として知られるのは?", c:["キニーネ","カフェイン","タンニン","メントール"], exp:"キニーネはキナの樹皮由来の成分。かつてマラリア予防薬だったキニーネを飲みやすくしたのがトニックウォーターの起源で、英国人がジンと合わせたのがジントニックの始まりとされます。" },
+  { cat:"cocktail", d:1, q:"ラム酒の原料は?", c:["サトウキビ","ブドウ","リンゴ","麦"], exp:"ラムはサトウキビの糖蜜や搾り汁から造る蒸留酒。カリブ海が本場で、モヒートやダイキリなど爽やかなカクテルに欠かせません。" },
+  { cat:"cocktail", d:2, q:"バーテンダーが「シェイク」する主な目的は?", c:["混ざりにくい材料を混ぜ、急速に冷やす","炭酸を加える","アルコールを飛ばす","音で客を楽しませる"], exp:"シェイクは混ざりにくい材料(クリームや卵、ジュースなど)を一気に混ぜ、氷で急冷しつつ空気を含ませてまろやかにする技法です。" },
+  { cat:"cocktail", d:1, q:"スクリュードライバーの組み合わせは?", c:["ウォッカ+オレンジジュース","ジン+レモンジュース","ラム+パイナップル","テキーラ+グレープフルーツ"], exp:"油田で働く作業員がねじ回し(スクリュードライバー)でかき混ぜて飲んだのが名前の由来という説が有名。飲みやすいので「レディキラー」の異名も。" },
+  { cat:"cocktail", d:1, q:"ビールをジンジャーエールで割ったカクテルは?", c:["シャンディガフ","レッドアイ","カシスオレンジ","ミモザ"], exp:"シャンディガフはビール+ジンジャーエールの爽やかカクテル。ビールが苦手でも飲みやすい入門編です。ビール+トマトジュースはレッドアイ。" },
+  { cat:"cocktail", d:1, q:"カシスオレンジの「カシス」とはどんな果実?", c:["黒すぐり(ベリーの一種)","柑橘の一種","ぶどうの品種","さくらんぼ"], exp:"カシスは黒すぐり(ブラックカラント)。甘酸っぱいカシスリキュールをオレンジジュースで割ったカシスオレンジは、度数低めで飲みやすい定番カクテルです。" },
+  { cat:"cocktail", d:1, q:"サングリアは何のお酒がベース?", c:["ワイン","ビール","日本酒","ウォッカ"], exp:"サングリアはスペイン生まれ。ワインに果物やスパイスを漬け込んだ、甘くフルーティで飲みやすいカクテルです。赤でも白でも作れます。" },
+  { cat:"cocktail", d:2, q:"グラスに直接材料を注いで作る技法を何と呼ぶ?", c:["ビルド","シェイク","ステア","ブレンド"], exp:"ビルド(build=組み立てる)はグラスの中で完成させる最もシンプルな技法。ハイボールやジントニックなど、炭酸系カクテルのほとんどはビルドで作られます。" },
+  { cat:"cocktail", d:3, q:"ネグローニの材料の組み合わせは?", c:["ジン+カンパリ+スイートベルモット","ウォッカ+コーヒーリキュール+生クリーム","ラム+ライム+ミント","テキーラ+カシス+ソーダ"], exp:"イタリア・フィレンツェの伯爵が愛したほろ苦い食前酒。3つを同量ずつ混ぜるだけと作りやすく、世界のバーで最も注文されるカクテルの常連です。" },
+  { cat:"cocktail", d:3, q:"マティーニで「ドライ」と注文すると、どうなる?", c:["ベルモットが少なめ(辛口)になる","氷が多くなる","ジンが減る","甘くなる"], exp:"ドライ=辛口。ベルモットの比率を減らすほど「ドライ」になります。チャーチルは「ベルモットの瓶を眺めるだけでいい」と極端なドライ好きの逸話を残しました。" },
+  { cat:"cocktail", d:3, q:"「ギムレット」の基本の組み合わせは?", c:["ジン+ライムジュース","ウォッカ+コーヒーリキュール","ラム+コーラ","テキーラ+オレンジジュース"], exp:"ギムレットはジン+ライム(+甘み)のショートカクテル。チャンドラーの小説『長いお別れ』の台詞「ギムレットには早すぎる」で知られる、ハードボイルドを象徴する一杯です。" },
+];
+
+/* IDを付与(カテゴリ内の並び順ベース。カテゴリ末尾への追加なら進捗を保てる) */
+(function assignIds() {
+  const counters = {};
+  QUESTIONS.forEach(q => {
+    counters[q.cat] = (counters[q.cat] || 0) + 1;
+    q.id = q.cat + counters[q.cat];
+  });
+})();
+
+/* ============================================================
+   バッジ定義
+   ============================================================ */
+const BADGES = [
+  { id:"first",     icon:"🍻", name:"最初の一杯",       desc:"初めて正解する" },
+  { id:"study1",    icon:"📖", name:"予習はバッチリ",   desc:"きほんノートを1つ読了" },
+  { id:"studyAll",  icon:"🎓", name:"教養人",           desc:"きほんノートを全て読了" },
+  { id:"combo5",    icon:"🔥", name:"5コンボ",          desc:"5問連続で正解する" },
+  { id:"perfect",   icon:"👑", name:"パーフェクト",     desc:"1セッション全問正解" },
+  { id:"speed",     icon:"⚡", name:"クイックドロー",   desc:"スピードボーナスを10回獲得" },
+  { id:"revenge",   icon:"💪", name:"リベンジ成功",     desc:"復習モードで10問正解" },
+  { id:"hard30",    icon:"🧗", name:"求道者",           desc:"上級問題を30問正解" },
+  { id:"level5",    icon:"🏅", name:"利き酒師見習い",   desc:"レベル5に到達する" },
+  { id:"level10",   icon:"🏆", name:"伝説の酒仙",       desc:"レベル10に到達する" },
+  { id:"sessions10",icon:"🪑", name:"常連さん",         desc:"10回セッションをプレイ" },
+  { id:"basic",     icon:"🔰", name:"きほんマスター",   desc:"お酒のきほんの図鑑をコンプ" },
+  { id:"beer",      icon:"🍺", name:"ビール博士",       desc:"ビールの図鑑をコンプ" },
+  { id:"sake",      icon:"🍶", name:"日本酒博士",       desc:"日本酒の図鑑をコンプ" },
+  { id:"wine",      icon:"🍷", name:"ワイン博士",       desc:"ワインの図鑑をコンプ" },
+  { id:"whisky",    icon:"🥃", name:"ウイスキー博士",   desc:"ウイスキーの図鑑をコンプ" },
+  { id:"cocktail",  icon:"🍸", name:"カクテル博士",     desc:"カクテルの図鑑をコンプ" },
+  { id:"complete",  icon:"📚", name:"生き字引",         desc:"全ジャンルの図鑑をコンプ" },
+];
+
+const TITLES = [
+  "ほろ酔い見習い",     // Lv1
+  "居酒屋ルーキー",     // Lv2
+  "宅飲みの達人",       // Lv3
+  "バーの常連",         // Lv4
+  "利き酒師見習い",     // Lv5
+  "テイスティング名人", // Lv6
+  "醸造通",             // Lv7
+  "酒博士",             // Lv8
+  "マスターソムリエ",   // Lv9
+  "伝説の酒仙",         // Lv10+
+];
+
+/* レベルnに上がるまでに必要な累計XP */
+function xpForLevel(n) { return 80 * (n - 1) * n / 2; } // Lv2=80, Lv3=240, Lv4=480...
+function levelFromXp(xp) {
+  let lv = 1;
+  while (lv < 99 && xp >= xpForLevel(lv + 1)) lv++;
+  return lv;
+}
+function titleForLevel(lv) { return TITLES[Math.min(lv, TITLES.length) - 1]; }
+
+/* ============================================================
+   状態管理
+   ============================================================ */
+const STORE_KEY = "sakeQuestState_v2";
+
+function defaultState() {
+  return {
+    xp: 0,
+    sessions: 0,
+    totalOk: 0,
+    totalNg: 0,
+    bestCombo: 0,
+    speedBonusCount: 0,
+    hardOk: 0,        // 上級問題の正解数
+    reviewOk: 0,      // 復習モードでの正解数
+    unlocked: {},     // 問題id -> true(図鑑)
+    wrong: {},        // 問題id -> true(要復習)
+    lessonsRead: {},  // カテゴリ -> true
+    badges: {},       // badgeId -> true
+  };
+}
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return Object.assign(defaultState(), JSON.parse(raw));
+  } catch (e) { /* 破損時は初期化 */ }
+  return defaultState();
+}
+function saveState() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+}
+
+/* ============================================================
+   ユーティリティ
+   ============================================================ */
+const $app = document.getElementById("app");
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[m]));
+}
+function questionsOf(cat, diff) {
+  return QUESTIONS.filter(q => (!cat || q.cat === cat) && (!diff || q.d === diff));
+}
+function unlockedCountFor(cat) {
+  return questionsOf(cat).filter(q => state.unlocked[q.id]).length;
+}
+function wrongList() {
+  return QUESTIONS.filter(q => state.wrong[q.id]);
+}
+
+/* ============================================================
+   バッジ判定
+   ============================================================ */
+function checkBadges(ctx) {
+  const earned = [];
+  const award = id => {
+    if (!state.badges[id]) { state.badges[id] = true; earned.push(BADGES.find(b => b.id === id)); }
+  };
+  if (state.totalOk >= 1) award("first");
+  const readCount = Object.keys(state.lessonsRead).length;
+  if (readCount >= 1) award("study1");
+  if (readCount >= Object.keys(LESSONS).length) award("studyAll");
+  if (state.bestCombo >= 5) award("combo5");
+  if (ctx && ctx.perfect) award("perfect");
+  if (state.speedBonusCount >= 10) award("speed");
+  if (state.reviewOk >= 10) award("revenge");
+  if (state.hardOk >= 30) award("hard30");
+  const lv = levelFromXp(state.xp);
+  if (lv >= 5) award("level5");
+  if (lv >= 10) award("level10");
+  if (state.sessions >= 10) award("sessions10");
+  let allComplete = true;
+  for (const cat of Object.keys(CATS)) {
+    const qs = questionsOf(cat);
+    if (qs.every(q => state.unlocked[q.id])) award(cat);
+    else allComplete = false;
+  }
+  if (allComplete) award("complete");
+  return earned;
+}
+
+/* ============================================================
+   画面:ホーム
+   ============================================================ */
+function renderHome() {
+  stopTimer();
+  onKey = null;
+  const lv = levelFromXp(state.xp);
+  const cur = xpForLevel(lv), next = xpForLevel(lv + 1);
+  const pct = Math.min(100, Math.round((state.xp - cur) / (next - cur) * 100));
+  const total = QUESTIONS.length;
+  const unlocked = unlockedCountFor(null);
+  const badgeCount = Object.keys(state.badges).length;
+  const acc = state.totalOk + state.totalNg > 0
+    ? Math.round(state.totalOk / (state.totalOk + state.totalNg) * 100) : 0;
+  const wrongCount = wrongList().length;
+  const isNewbie = state.sessions === 0 && Object.keys(state.lessonsRead).length === 0;
+
+  const catBtns = Object.entries(CATS).map(([key, c]) => {
+    const qs = questionsOf(key);
+    const got = qs.filter(q => state.unlocked[q.id]).length;
+    return `<button class="cat-btn" data-cat="${key}">
+      <span class="icon">${c.icon}</span>
+      <span class="name">${c.name}</span>
+      <div class="count">図鑑 ${got}/${qs.length}</div>
+    </button>`;
+  }).join("");
+
+  $app.innerHTML = `
+  <div class="screen">
+    <div class="topbar">
+      <div class="logo"><span class="beer">🍺</span>酒クエスト<small>SAKE QUEST — お酒の知識クイズ</small></div>
+    </div>
+
+    ${isNewbie ? `
+    <div class="welcome">
+      <b>🔰 はじめての方へ</b>
+      お酒の知識ゼロでも大丈夫!おすすめの進め方:
+      <ol>
+        <li>「📚 まなぶ」で <b>お酒のきほん</b> を読む</li>
+        <li>「🔰 お酒のきほん」クイズの <b>初級</b> に挑戦</li>
+        <li>好きなジャンルへ進んで図鑑を集めよう!</li>
+      </ol>
+      文中の<span class="term" data-ti="0">点線つきの用語</span>はタップすると解説が出ます。
+    </div>` : ""}
+
+    <div class="card player-card">
+      <div class="player-head">
+        <div class="avatar">${lv >= 10 ? "🐉" : lv >= 7 ? "🦉" : lv >= 4 ? "🦊" : "🐣"}</div>
+        <div>
+          <div class="player-title">${esc(titleForLevel(lv))}</div>
+          <div class="player-level">Lv. ${lv}</div>
+        </div>
+      </div>
+      <div class="progressbar"><div style="width:${pct}%"></div></div>
+      <div class="xp-row"><span>XP ${state.xp}</span><span>次のレベルまで ${next - state.xp} XP</span></div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><b>${acc}%</b><span>正答率</span></div>
+      <div class="stat"><b>${unlocked}/${total}</b><span>図鑑</span></div>
+      <div class="stat"><b>${badgeCount}/${BADGES.length}</b><span>バッジ</span></div>
+      <div class="stat"><b>${state.bestCombo}</b><span>最高コンボ</span></div>
+    </div>
+
+    <div class="section-title">🎯 クイズに挑戦(10問)</div>
+    <div class="cat-grid">
+      <button class="cat-btn all" data-cat="">
+        <span class="icon">🎲</span>
+        <div><span class="name">全ジャンルおまかせ</span>
+        <div class="count">6ジャンルからランダム出題</div></div>
+      </button>
+      ${catBtns}
+    </div>
+
+    <button class="btn review-btn" id="btn-review" ${wrongCount === 0 ? "disabled" : ""}>
+      <span>❌ 苦手を復習する</span>
+      <span class="pill">${wrongCount}問</span>
+    </button>
+
+    <div class="nav-row">
+      <button class="btn" id="btn-learn">📚 まなぶ</button>
+      <button class="btn" id="btn-gloss">🔤 用語集</button>
+      <button class="btn" id="btn-zukan">📖 図鑑</button>
+      <button class="btn" id="btn-badges">🏆 バッジ</button>
+    </div>
+    <div class="warning-note">お酒は20歳になってから。飲酒は適量を守って楽しみましょう。</div>
+  </div>`;
+
+  $app.querySelectorAll(".cat-btn").forEach(btn => {
+    btn.addEventListener("click", () => renderDifficulty(btn.dataset.cat || null));
+  });
+  document.getElementById("btn-review").addEventListener("click", startReviewSession);
+  document.getElementById("btn-learn").addEventListener("click", renderLearnList);
+  document.getElementById("btn-gloss").addEventListener("click", renderGlossary);
+  document.getElementById("btn-zukan").addEventListener("click", renderZukan);
+  document.getElementById("btn-badges").addEventListener("click", renderBadges);
+}
+
+/* ============================================================
+   画面:難易度選択
+   ============================================================ */
+function renderDifficulty(cat) {
+  const c = cat ? CATS[cat] : { name: "全ジャンルおまかせ", icon: "🎲" };
+
+  const diffBtns = [1, 2, 3].map(d => {
+    const pool = questionsOf(cat, d);
+    const ok = pool.length >= 5;
+    return `<button class="diff-btn" data-diff="${d}" ${ok ? "" : "disabled"}>
+      <span class="dicon">${["🌱","🌿","🌳"][d - 1]}</span>
+      <div>
+        <div class="dname">${DIFFS[d].name} <span class="stars">${DIFFS[d].stars}</span></div>
+        <div class="ddesc">${ok ? DIFFS[d].desc + "(" + pool.length + "問)" : "問題数が足りません"}</div>
+      </div>
+      <span class="dxp">${DIFFS[d].xp}XP/問</span>
+    </button>`;
+  }).join("");
+
+  $app.innerHTML = `
+  <div class="screen">
+    <button class="btn back-btn" id="btn-back">← ホーム</button>
+    <div class="section-title" style="margin-top:0">${c.icon} ${esc(c.name)} — 難易度を選ぼう</div>
+    <div class="diff-list">
+      ${diffBtns}
+      <button class="diff-btn" data-diff="0">
+        <span class="dicon">🎲</span>
+        <div>
+          <div class="dname">おまかせミックス</div>
+          <div class="ddesc">初級〜上級からバランスよく出題</div>
+        </div>
+        <span class="dxp">10〜20XP/問</span>
+      </button>
+    </div>
+  </div>`;
+
+  document.getElementById("btn-back").addEventListener("click", renderHome);
+  $app.querySelectorAll(".diff-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const d = parseInt(btn.dataset.diff, 10);
+      startSession(cat, d === 0 ? null : d);
+    });
+  });
+}
+
+/* ============================================================
+   画面:まなぶ(きほんノート)
+   ============================================================ */
+const LESSON_XP = 20;
+
+function renderLearnList() {
+  const items = Object.entries(CATS).map(([key, c]) => {
+    const read = state.lessonsRead[key];
+    const pages = LESSONS[key] ? LESSONS[key].length : 0;
+    return `<button class="cat-btn" data-cat="${key}" style="width:100%">
+      <span class="icon">${c.icon}</span>
+      <span class="name">${c.name}のきほん</span>
+      <div class="count">${pages}ページ ${read ? "・✅ 読了" : "・未読(読了で+" + LESSON_XP + "XP)"}</div>
+    </button>`;
+  }).join("");
+
+  $app.innerHTML = `
+  <div class="screen">
+    <button class="btn back-btn" id="btn-back">← ホーム</button>
+    <div class="section-title" style="margin-top:0">📚 きほんノート</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+      クイズの前にサクッと読める入門ノート。初めてなら「🔰 お酒のきほん」からどうぞ。
+    </p>
+    <div class="cat-grid" style="grid-template-columns:1fr">${items}</div>
+  </div>`;
+
+  document.getElementById("btn-back").addEventListener("click", renderHome);
+  $app.querySelectorAll(".cat-btn").forEach(btn => {
+    btn.addEventListener("click", () => renderLesson(btn.dataset.cat));
+  });
+}
+
+function renderLesson(cat) {
+  const c = CATS[cat];
+  const pages = LESSONS[cat] || [];
+  const alreadyRead = !!state.lessonsRead[cat];
+
+  $app.innerHTML = `
+  <div class="screen">
+    <button class="btn back-btn" id="btn-back">← ノート一覧</button>
+    <div class="section-title" style="margin-top:0">${c.icon} ${esc(c.name)}のきほん</div>
+    ${pages.map((p, i) => `
+      <div class="lesson-page">
+        <h3>${i + 1}. ${esc(p.t)}</h3>
+        <p>${linkTerms(esc(p.b))}</p>
+      </div>`).join("")}
+    ${alreadyRead
+      ? `<div class="lesson-done">✅ 読了済み</div>`
+      : `<button class="btn primary block" id="btn-done">読み終わった!(+${LESSON_XP}XP)</button>`}
+    <button class="btn block" id="btn-quiz" style="margin-top:10px">このジャンルのクイズに挑戦 →</button>
+  </div>`;
+
+  document.getElementById("btn-back").addEventListener("click", renderLearnList);
+  document.getElementById("btn-quiz").addEventListener("click", () => renderDifficulty(cat));
+  const doneBtn = document.getElementById("btn-done");
+  if (doneBtn) {
+    doneBtn.addEventListener("click", () => {
+      state.lessonsRead[cat] = true;
+      state.xp += LESSON_XP;
+      checkBadges(null);
+      saveState();
+      renderLesson(cat);
+    });
+  }
+}
+
+/* ============================================================
+   クイズセッション
+   ============================================================ */
+const SESSION_SIZE = 10;
+const TIME_LIMIT = 20;      // 秒
+const SPEED_THRESHOLD = 12; // 残り12秒以上で正解ならスピードボーナス
+
+let session = null;
+let timerId = null;
+
+function buildSession(qs, meta) {
+  session = Object.assign({
+    qIds: qs.map(q => q.id),
+    cur: 0,
+    ok: 0,
+    combo: 0,
+    maxCombo: 0,
+    xpGain: 0,
+    speedBonuses: 0,
+    newCards: 0,
+    startXp: state.xp,
+  }, meta);
+  renderQuestion();
+}
+
+function startSession(cat, diff) {
+  const pool = questionsOf(cat, diff);
+  // 未収集の問題を優先しつつランダムに出題
+  const locked = shuffle(pool.filter(q => !state.unlocked[q.id]));
+  const done   = shuffle(pool.filter(q => state.unlocked[q.id]));
+  const picked = shuffle(locked.concat(done).slice(0, Math.min(SESSION_SIZE, pool.length)));
+  buildSession(picked, { cat, diff, isReview: false });
+}
+
+function startReviewSession() {
+  const pool = shuffle(wrongList());
+  if (pool.length === 0) return;
+  buildSession(pool.slice(0, Math.min(SESSION_SIZE, pool.length)), { cat: null, diff: null, isReview: true });
+}
+
+function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+
+function qById(id) { return QUESTIONS.find(q => q.id === id); }
+
+function renderQuestion() {
+  stopTimer();
+  const q = qById(session.qIds[session.cur]);
+  const cat = CATS[q.cat];
+  // 選択肢シャッフル(c[0]が正解)
+  const choices = shuffle(q.c.map((text, i) => ({ text, correct: i === 0 })));
+  const pct = Math.round(session.cur / session.qIds.length * 100);
+
+  $app.innerHTML = `
+  <div class="screen">
+    <div class="quiz-head">
+      <button class="btn ghost" id="btn-quit" style="padding:6px 12px;font-size:13px;">✕</button>
+      <div class="progressbar"><div style="width:${pct}%"></div></div>
+      <span class="qnum">Q${session.cur + 1}/${session.qIds.length}</span>
+    </div>
+    <div class="timer-wrap">
+      <div class="timerbar"><div id="timerfill" style="width:100%"></div></div>
+      <span class="timer-num" id="timernum">${TIME_LIMIT}</span>
+      ${session.combo >= 2 ? `<span class="combo-tag">🔥${session.combo}コンボ</span>` : ""}
+    </div>
+    <div class="card question-card">
+      <div class="question-cat">
+        <span class="pill">${cat.icon} ${cat.name}</span>
+        <span class="pill"><span class="stars">${DIFFS[q.d].stars}</span> ${DIFFS[q.d].name}</span>
+        ${session.isReview ? `<span class="pill">💪 復習</span>` : ""}
+      </div>
+      <div class="question-text">${linkTerms(esc(q.q), excludeForQuestion(q))}</div>
+    </div>
+    <div class="choices" id="choices">
+      ${choices.map((c, i) => `
+        <button class="choice" data-correct="${c.correct ? 1 : 0}">
+          <span class="key">${i + 1}</span><span>${esc(c.text)}</span>
+        </button>`).join("")}
+    </div>
+    <div id="feedback"></div>
+  </div>`;
+
+  document.getElementById("btn-quit").addEventListener("click", () => {
+    stopTimer(); renderHome();
+  });
+
+  const btns = Array.from($app.querySelectorAll(".choice"));
+  btns.forEach(btn => btn.addEventListener("click", () => answer(btn, btns, q)));
+
+  // キーボード 1-4
+  onKey = e => {
+    const n = parseInt(e.key, 10);
+    if (n >= 1 && n <= btns.length && !btns[0].disabled) answer(btns[n - 1], btns, q);
+  };
+
+  // タイマー開始
+  let remain = TIME_LIMIT;
+  session.remain = remain;
+  const fill = document.getElementById("timerfill");
+  const num = document.getElementById("timernum");
+  timerId = setInterval(() => {
+    remain -= 0.2;
+    session.remain = remain;
+    const p = Math.max(0, remain / TIME_LIMIT * 100);
+    fill.style.width = p + "%";
+    if (remain <= 5) fill.classList.add("warn");
+    num.textContent = Math.max(0, Math.ceil(remain));
+    if (remain <= 0) {
+      stopTimer();
+      answer(null, btns, q); // 時間切れ
+    }
+  }, 200);
+}
+
+let onKey = null;
+document.addEventListener("keydown", e => {
+  if (document.getElementById("popup-overlay")) {
+    if (e.key === "Escape" || e.key === "Enter") closeTerm();
+    return; // ポップアップ表示中は他のキー操作を止める
+  }
+  if (onKey) onKey(e);
+});
+
+/* ============================================================
+   用語ポップアップ
+   ============================================================ */
+function showTerm(i) {
+  const e = GLOSSARY[i];
+  if (!e) return;
+  closeTerm();
+  const ov = document.createElement("div");
+  ov.id = "popup-overlay";
+  ov.innerHTML = `
+    <div class="popup-card">
+      <div class="phead"><span class="pterm">💡 ${esc(e.t)}</span>
+      <button class="pclose" aria-label="閉じる">✕</button></div>
+      <div class="pdef">${linkTerms(esc(e.def), new Set(e.names))}</div>
+      <div class="phint">点線つきの用語はどこでもタップで解説が見られます</div>
+    </div>`;
+  ov.addEventListener("click", ev => { if (ev.target === ov) closeTerm(); });
+  ov.querySelector(".pclose").addEventListener("click", closeTerm);
+  document.body.appendChild(ov);
+}
+function closeTerm() {
+  const ov = document.getElementById("popup-overlay");
+  if (ov) ov.remove();
+}
+/* 用語タップ(画面を再描画しても効くよう委譲で処理) */
+document.addEventListener("click", ev => {
+  const t = ev.target.closest ? ev.target.closest(".term") : null;
+  if (t) { ev.stopPropagation(); showTerm(parseInt(t.dataset.ti, 10)); }
+});
+
+function answer(btn, btns, q) {
+  stopTimer();
+  onKey = null;
+  btns.forEach(b => b.disabled = true);
+  const isCorrect = btn && btn.dataset.correct === "1";
+  const remain = session.remain != null ? session.remain : 0;
+
+  // 表示更新
+  btns.forEach(b => {
+    if (b.dataset.correct === "1") b.classList.add("correct");
+    else if (b === btn) b.classList.add("wrong");
+    else b.classList.add("dim");
+  });
+
+  let bonusText = "";
+  let newCard = false;
+
+  if (isCorrect) {
+    session.ok++;
+    session.combo++;
+    session.maxCombo = Math.max(session.maxCombo, session.combo);
+    state.totalOk++;
+    if (q.d === 3) state.hardOk++;
+    if (session.isReview) state.reviewOk++;
+    delete state.wrong[q.id]; // 苦手リストから卒業
+
+    let gain = DIFFS[q.d].xp;
+    if (session.combo >= 2) {
+      const comboBonus = Math.min(10, (session.combo - 1) * 2);
+      gain += comboBonus;
+      bonusText += `🔥 ${session.combo}コンボ +${comboBonus}XP `;
+    }
+    if (remain >= SPEED_THRESHOLD) {
+      gain += 5;
+      session.speedBonuses++;
+      state.speedBonusCount++;
+      bonusText += "⚡ スピードボーナス +5XP";
+    }
+    session.xpGain += gain;
+    state.xp += gain;
+    if (!state.unlocked[q.id]) {
+      state.unlocked[q.id] = true;
+      session.newCards++;
+      newCard = true;
+    }
+    if (session.combo > state.bestCombo) state.bestCombo = session.combo;
+  } else {
+    session.combo = 0;
+    state.totalNg++;
+    state.wrong[q.id] = true; // 苦手リストへ
+  }
+  saveState();
+
+  const isLast = session.cur >= session.qIds.length - 1;
+  const fb = document.getElementById("feedback");
+  fb.innerHTML = `
+    <div class="feedback">
+      <div class="verdict ${isCorrect ? "ok" : "ng"}">${isCorrect ? "⭕ 正解!" : (btn ? "❌ 不正解…" : "⏰ 時間切れ!")}</div>
+      ${bonusText ? `<div class="bonus">${bonusText}</div>` : ""}
+      <div class="exp">${linkTerms(esc(q.exp))}</div>
+      ${newCard ? `<div class="newcard">📖 図鑑に新しい知識カードが追加された!</div>` : ""}
+      ${!isCorrect ? `<div class="newcard" style="color:var(--red)">💪 「苦手を復習する」に追加。正解すれば卒業!</div>` : ""}
+      <button class="btn primary block" id="btn-next">${isLast ? "結果を見る 🏁" : "次の問題へ →"}</button>
+    </div>`;
+  const nextBtn = document.getElementById("btn-next");
+  nextBtn.addEventListener("click", nextQuestion);
+  nextBtn.focus();
+  onKey = e => { if (e.key === "Enter" || e.key === " ") nextQuestion(); };
+}
+
+function nextQuestion() {
+  onKey = null;
+  session.cur++;
+  if (session.cur >= session.qIds.length) renderResult();
+  else renderQuestion();
+}
+
+/* ============================================================
+   画面:リザルト
+   ============================================================ */
+function renderResult() {
+  state.sessions++;
+  const beforeLv = levelFromXp(session.startXp);
+  const afterLv = levelFromXp(state.xp);
+  const perfect = session.ok === session.qIds.length;
+  const earned = checkBadges({ perfect });
+  saveState();
+
+  const total = session.qIds.length;
+  let heroIcon, heroMsg, heroSub;
+  if (perfect)                        { heroIcon = "👑"; heroMsg = "パーフェクト!"; heroSub = "完璧です。乾杯!"; }
+  else if (session.ok >= total * 0.7) { heroIcon = "🍻"; heroMsg = "お見事!";       heroSub = "かなりの酒通ですね"; }
+  else if (session.ok >= total * 0.4) { heroIcon = "🍺"; heroMsg = "まずまず!";     heroSub = "図鑑で復習してもう一杯"; }
+  else                                { heroIcon = "🫗"; heroMsg = "これから!";     heroSub = "きほんノートを読んでリベンジ!"; }
+
+  $app.innerHTML = `
+  <div class="screen">
+    <div class="result-hero">
+      <div class="big">${heroIcon}</div>
+      <h2>${heroMsg}</h2>
+      <p>${heroSub}</p>
+    </div>
+    <div class="result-score"><b>${session.ok}</b><span> / ${total} 問正解</span></div>
+
+    <div class="gain-list">
+      <div class="gain"><span>💰 獲得XP</span><b>+${session.xpGain} XP</b></div>
+      <div class="gain"><span>🔥 最大コンボ</span><b>${session.maxCombo}</b></div>
+      <div class="gain"><span>⚡ スピードボーナス</span><b>${session.speedBonuses}回</b></div>
+      <div class="gain"><span>📖 新しい知識カード</span><b>+${session.newCards}枚</b></div>
+    </div>
+
+    ${afterLv > beforeLv ? `
+      <div class="levelup">🎉 レベルアップ! Lv.${beforeLv} → Lv.${afterLv}
+        <small>称号:${esc(titleForLevel(afterLv))}</small>
+      </div>` : ""}
+
+    ${earned.map(b => `<div class="badge-earn"><span style="font-size:22px">${b.icon}</span> バッジ獲得:${esc(b.name)}</div>`).join("")}
+
+    <button class="btn primary block" id="btn-again" style="margin-top:8px">もう一度挑戦 🍺</button>
+    <button class="btn block" id="btn-home" style="margin-top:10px">ホームへ戻る</button>
+  </div>`;
+
+  document.getElementById("btn-again").addEventListener("click", () => {
+    if (session.isReview) {
+      if (wrongList().length > 0) startReviewSession();
+      else renderHome();
+    } else {
+      startSession(session.cat, session.diff);
+    }
+  });
+  document.getElementById("btn-home").addEventListener("click", renderHome);
+}
+
+/* ============================================================
+   画面:図鑑
+   ============================================================ */
+function renderZukan() {
+  const total = QUESTIONS.length;
+  const got = unlockedCountFor(null);
+  const pct = Math.round(got / total * 100);
+
+  const sections = Object.entries(CATS).map(([key, c]) => {
+    const qs = questionsOf(key);
+    const gotCat = qs.filter(q => state.unlocked[q.id]).length;
+    const items = qs.map(q => {
+      if (state.unlocked[q.id]) {
+        return `<div class="zukan-item">
+          <div class="zq"><span class="stars">${DIFFS[q.d].stars}</span>${linkTerms(esc(q.q))}</div>
+          <div class="za">A. ${esc(q.c[0])}</div>
+          <div class="zexp">${linkTerms(esc(q.exp))}</div>
+        </div>`;
+      }
+      return `<div class="zukan-item locked">🔒 ??? — クイズに正解すると解放</div>`;
+    }).join("");
+    return `<div class="zukan-cat-title">${c.icon} ${c.name}<span class="pill">${gotCat}/${qs.length}</span></div>
+      <div class="zukan-list">${items}</div>`;
+  }).join("");
+
+  $app.innerHTML = `
+  <div class="screen">
+    <button class="btn back-btn" id="btn-back">← ホーム</button>
+    <div class="card zukan-progress">
+      <div class="row"><span>📖 知識図鑑</span><span>${got}/${total}(${pct}%)</span></div>
+      <div class="progressbar"><div style="width:${pct}%"></div></div>
+    </div>
+    ${sections}
+  </div>`;
+  document.getElementById("btn-back").addEventListener("click", renderHome);
+}
+
+/* ============================================================
+   画面:用語集
+   ============================================================ */
+function renderGlossary() {
+  const groups = [];
+  GLOSSARY.forEach((e, i) => {
+    let grp = groups.find(g => g.name === e.g);
+    if (!grp) { grp = { name: e.g, items: [] }; groups.push(grp); }
+    grp.items.push({ e, i });
+  });
+
+  const sections = groups.map(grp => `
+    <div class="gloss-group">${esc(grp.name)}</div>
+    ${grp.items.map(({ e }) => `
+      <div class="gloss-item">
+        <b>${esc(e.t)}</b>
+        ${linkTerms(esc(e.def), new Set(e.names))}
+      </div>`).join("")}
+  `).join("");
+
+  $app.innerHTML = `
+  <div class="screen">
+    <button class="btn back-btn" id="btn-back">← ホーム</button>
+    <div class="section-title" style="margin-top:0">🔤 用語集(全${GLOSSARY.length}語)</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:4px">
+      問題文や解説に出てくる点線つきの用語は、その場でタップしても解説が見られます。
+    </p>
+    ${sections}
+  </div>`;
+  document.getElementById("btn-back").addEventListener("click", renderHome);
+}
+
+/* ============================================================
+   画面:バッジ
+   ============================================================ */
+function renderBadges() {
+  const cards = BADGES.map(b => {
+    const has = !!state.badges[b.id];
+    return `<div class="badge-card ${has ? "earned" : "locked"}">
+      <span class="bicon">${b.icon}</span>
+      <div class="bname">${esc(b.name)}</div>
+      <div class="bdesc">${esc(b.desc)}</div>
+    </div>`;
+  }).join("");
+  const count = Object.keys(state.badges).length;
+
+  $app.innerHTML = `
+  <div class="screen">
+    <button class="btn back-btn" id="btn-back">← ホーム</button>
+    <div class="section-title" style="margin-top:0">🏆 バッジ(${count}/${BADGES.length})</div>
+    <div class="badge-grid">${cards}</div>
+  </div>`;
+  document.getElementById("btn-back").addEventListener("click", renderHome);
+}
+
+/* ============================================================
+   起動
+   ============================================================ */
+renderHome();
+</script>
+</body>
+</html>
