@@ -1,9 +1,10 @@
 /* 酒クエスト Service Worker — オフライン対応 */
-const VERSION = "sake-quest-v1";
+const VERSION = "sake-quest-v2";
 const CORE = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
+  "./favicon.ico",
   "./icon-192.png",
   "./icon-512.png",
   "./icon-maskable-512.png",

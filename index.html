@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>酒クエスト 〜お酒の知識クイズ〜</title>
-<meta name="description" content="ビール・日本酒・ワイン・ウイスキー・カクテルの知識を、あそんで極めるクイズアプリ。全172問・達人難易度・エキスパート認定試験に挑戦しよう。">
+<meta name="description" content="ビール・日本酒・焼酎・ワイン・ウイスキー・カクテルの知識を、あそんで極めるクイズアプリ。達人難易度・エキスパート認定試験・デイリーチャレンジに挑戦しよう。">
 <link rel="canonical" href="https://mh-mobile.github.io/sake_quest/">
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#14100c">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -21,7 +22,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="酒クエスト">
 <meta property="og:title" content="酒クエスト 〜お酒の知識クイズ〜">
-<meta property="og:description" content="お酒の知識、あそんで極める。全172問・達人難易度・エキスパート認定試験に挑戦しよう。">
+<meta property="og:description" content="お酒の知識、あそんで極める。達人難易度・エキスパート認定試験・デイリーチャレンジに挑戦しよう。">
 <meta property="og:url" content="https://mh-mobile.github.io/sake_quest/">
 <meta property="og:image" content="https://mh-mobile.github.io/sake_quest/ogp.png">
 <meta property="og:image:width" content="1200">
@@ -29,7 +30,7 @@
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="酒クエスト 〜お酒の知識クイズ〜">
-<meta name="twitter:description" content="お酒の知識、あそんで極める。全172問・達人難易度・エキスパート認定試験。">
+<meta name="twitter:description" content="お酒の知識、あそんで極める。達人難易度・エキスパート認定試験・デイリーチャレンジ。">
 <meta name="twitter:image" content="https://mh-mobile.github.io/sake_quest/ogp.png">
 <style>
   :root {
@@ -423,6 +424,57 @@
     box-shadow: 0 8px 24px rgba(0,0,0,.4);
   }
   #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- 成績ダッシュボード ---------- */
+  .stats-title { font-size: 13px; font-weight: 800; color: var(--muted); margin: 20px 0 10px; }
+  .weak-note {
+    background: linear-gradient(135deg, rgba(240,168,50,.14), var(--card));
+    border: 1px solid var(--amber-dim); border-radius: 12px; padding: 12px 14px;
+    font-size: 13px; line-height: 1.6;
+  }
+  .weak-note b { color: var(--gold); }
+  .stat-bars { display: flex; flex-direction: column; gap: 8px; }
+  .stat-bar-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .stat-bar-row .sb-label { width: 108px; flex-shrink: 0; font-weight: 700; }
+  .stat-bar-row .sb-label .stars { font-size: 10px; }
+  .stat-bar-row .sb-track { flex: 1; height: 9px; background: var(--card-hi); border-radius: 999px; overflow: hidden; }
+  .stat-bar-row .sb-fill { height: 100%; background: linear-gradient(90deg, var(--amber-dim), var(--amber)); border-radius: 999px; }
+  .stat-bar-row .sb-val { width: 82px; flex-shrink: 0; text-align: right; font-weight: 800; color: var(--gold); }
+  .stat-bar-row .sb-val small { display: block; font-weight: 600; color: var(--muted); font-size: 10px; }
+
+  /* ---------- 設定 ---------- */
+  .setting-group {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 6px 14px;
+  }
+  .setting-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+  .setting-row + .setting-row { border-top: 1px solid var(--border); }
+  .setting-text { flex: 1; }
+  .setting-text b { display: block; font-size: 15px; }
+  .setting-text small { color: var(--muted); font-size: 12px; }
+  .switch {
+    width: 50px; height: 30px; border-radius: 999px; border: none; cursor: pointer;
+    background: #4a3f30; position: relative; flex-shrink: 0; transition: background .2s ease;
+    padding: 0;
+  }
+  .switch.on { background: var(--amber); }
+  .switch .knob {
+    position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%;
+    background: #fff; transition: transform .2s ease;
+  }
+  .switch.on .knob { transform: translateX(20px); }
+  .reset-btn { color: var(--red); border-color: rgba(224,92,92,.4); }
+  .import-text {
+    width: 100%; height: 90px; margin: 8px 0; padding: 10px; font-size: 12px;
+    background: var(--bg2); color: var(--text); border: 1px solid var(--border); border-radius: 10px;
+    resize: vertical; font-family: inherit;
+  }
+  .confirm-box {
+    margin-top: 8px; background: rgba(224,92,92,.08); border: 1px solid rgba(224,92,92,.4);
+    border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.6;
+  }
+  .confirm-btns { display: flex; gap: 8px; margin-top: 10px; }
+  .confirm-btns .btn { flex: 1; }
 </style>
 </head>
 <body>
@@ -438,6 +490,7 @@ const CATS = {
   basic:    { name: "お酒のきほん", icon: "🔰" },
   beer:     { name: "ビール",     icon: "🍺" },
   sake:     { name: "日本酒",     icon: "🍶" },
+  shochu:   { name: "焼酎・泡盛", icon: "🍠" },
   wine:     { name: "ワイン",     icon: "🍷" },
   whisky:   { name: "ウイスキー", icon: "🥃" },
   cocktail: { name: "カクテル",   icon: "🍸" },
@@ -510,6 +563,14 @@ const GLOSSARY = [
   { g:"カクテル", t:"ステア", names:["ステア"], def:"ミキシンググラスで氷と材料を静かに混ぜ、漉してグラスに注ぐ技法。マティーニなど、透明感を大切にするカクテルに使います。" },
   { g:"カクテル", t:"シェイク", names:["シェイク"], def:"シェイカーに氷と材料を入れて振る技法。急速に冷やしながら空気を含ませ、混ざりにくい材料をまろやかに一体化させます。" },
   { g:"カクテル", t:"ジンジャービア", names:["ジンジャービア"], def:"生姜を発酵させて造る、辛口で濃厚なジンジャー飲料(ノンアルコールが主流)。モスコミュールの正統なレシピに使われます。" },
+  /* 焼酎・泡盛 */
+  { g:"焼酎・泡盛", t:"本格焼酎", names:["本格焼酎"], def:"単式蒸留で原料の風味を活かした焼酎。酒税法上は「単式蒸留焼酎(乙類)」。芋・麦・米・そば・黒糖などの個性が楽しめます。" },
+  { g:"焼酎・泡盛", t:"甲類焼酎", names:["甲類焼酎","甲類"], def:"連続式蒸留で造る、クセの少ないクリアな焼酎(ホワイトリカー)。チューハイやサワー、果実酒のベースに使われます。" },
+  { g:"焼酎・泡盛", t:"黒麹", names:["黒麹"], def:"クエン酸を多く出して雑菌の繁殖を抑える麹。温暖な沖縄で腐敗を防ぐため泡盛に使われてきました。どっしりした味わいになります。" },
+  { g:"焼酎・泡盛", t:"白麹", names:["白麹"], def:"黒麹から派生した麹。まろやかで飲みやすい味わいになり、現在の芋焼酎の主流です。" },
+  { g:"焼酎・泡盛", t:"泡盛", names:["泡盛"], def:"沖縄の米(タイ米)と黒麹だけで仕込む蒸留酒。二次原料を加えない「全麹仕込み」で、3年以上熟成させると古酒(クース)と呼ばれます。" },
+  { g:"焼酎・泡盛", t:"減圧蒸留", names:["減圧蒸留"], def:"蒸留器内の気圧を下げて沸点を低くする蒸留法。軽快でクリアな味わいになり、飲みやすい麦焼酎などに使われます。対する常圧蒸留は香味が力強く残ります。" },
+  { g:"焼酎・泡盛", t:"前割り", names:["前割り"], def:"焼酎を飲む前(前日など)に水で割って寝かせ、水と馴染ませてまろやかにする飲み方。九州で親しまれています。" },
 ];
 
 /* 用語名 → GLOSSARYのindex(長い表記を優先してマッチ) */
@@ -589,6 +650,14 @@ const LESSONS = {
     { t: "基本の作り方は3つ", b: "ビルド:グラスに直接注いで混ぜる(ハイボール等)。ステア:氷と混ぜて漉す(マティーニ)。シェイク:振って急冷し、混ざりにくい材料をまろやかに一体化(ダイキリ等)。ミキサーで混ぜる「ブレンド」を加えて4技法と数えることもあります。" },
     { t: "ショートとロング", b: "ショートカクテル:小さなグラスで氷なし、強めを冷たいうちに(マティーニ)。ロングカクテル:氷入りの大きなグラスでゆっくり(ジントニック)。度数もショートの方が高めです。" },
     { t: "バーでの頼み方", b: "「甘め/さっぱり」「強め/弱め」「好きな果物」を伝えれば、バーテンダーが合う1杯を作ってくれます。迷ったら度数低めのロングから。1杯目におすすめなのはジントニックやモスコミュールです。" },
+  ],
+  shochu: [
+    { t: "焼酎は蒸留酒", b: "米・麦・芋などを発酵させた もろみ を蒸留して造るお酒。原料の個性が豊かで、芋(さつまいも)・麦・米・そば・黒糖などバリエーション豊富。度数は25%前後が主流です。" },
+    { t: "甲類と乙類(本格焼酎)", b: "連続式蒸留で造るクセのない甲類焼酎(ホワイトリカー)は、チューハイやサワーのベース向き。単式蒸留で原料の風味を活かした乙類が本格焼酎で、芋や麦の個性を楽しめます。" },
+    { t: "麹の色で味が変わる", b: "白麹はまろやかで飲みやすく、芋焼酎の主流。黒麹はどっしり濃厚で、クエン酸を多く出し腐敗を防ぐため泡盛の伝統麹です。黄麹は清酒のように華やかな香りが出ます。" },
+    { t: "常圧蒸留と減圧蒸留", b: "常圧蒸留は原料由来の香味が力強く残る昔ながらの製法。減圧蒸留は気圧を下げて低温で蒸留し、軽快でクリアな味わいに。飲みやすい麦焼酎などに使われます。" },
+    { t: "焼酎の飲み方", b: "お湯割り(お湯を先に注ぐと対流で混ざる)、水割り、ロック、ソーダ割りなど自由自在。九州では前日までに水で割って寝かせる「前割り」でまろやかにする通な飲み方もあります。" },
+    { t: "泡盛のきほん", b: "沖縄の蒸留酒。米(タイ米)と黒麹だけを使い、二次原料を足さない「全麹仕込み」が特徴。3年以上熟成させたものは古酒(クース)と呼ばれ、まろやかで深い味わいになります。" },
   ],
 };
 
@@ -782,6 +851,31 @@ const QUESTIONS = [
   { cat:"cocktail", d:4, q:"テキーラと同じくアガベを原料とし、スモーキーな風味をもつメキシコの蒸留酒は?", c:["メスカル","カシャッサ","ピスコ","グラッパ"], exp:"メスカルはアガベを地中の窯で燻し焼きにしてから発酵・蒸留するため独特のスモーキーさをまといます。テキーラもアガベ(ブルーアガベ)を使うメスカルの一種で、特定地域産などの厳しい規定を満たしたものです。" },
   { cat:"cocktail", d:4, q:"卵白を使うカクテルで、先に氷なしで振って泡立てる技法は?", c:["ドライシェイク","ハードシェイク","スローイング","マドリング"], exp:"ドライシェイクは氷を入れずに振って卵白をしっかり乳化・起泡させ、その後で氷を足して冷やす二段構えの技法。ウイスキーサワーやピスコサワーのきめ細かい泡を作る定番テクニックです。" },
   { cat:"cocktail", d:4, q:"フランスの修道院で造られ、130種以上の薬草を用いる緑色のリキュールは?", c:["シャルトリューズ","カンパリ","コアントロー","ベイリーズ"], exp:"シャルトリューズはカルトジオ会の修道士が門外不出のレシピで造る薬草リキュール。鮮烈な香草香と高い度数(緑は55%)で、ラスト・ワードなどのカクテルに欠かせません。色名「シャルトルーズ」の語源でもあります。" },
+
+  /* ---------- 焼酎・泡盛 ---------- */
+  { cat:"shochu", d:1, q:"焼酎はお酒の分類でいうと?", c:["蒸留酒","醸造酒","混成酒","発泡酒"], exp:"焼酎は発酵させたもろみを蒸留して造る蒸留酒。同じ和酒でも、発酵だけの日本酒(醸造酒)より度数が高いのは蒸留しているからです。" },
+  { cat:"shochu", d:1, q:"芋焼酎の主原料は?", c:["さつまいも","じゃがいも","米","とうもろこし"], exp:"芋焼酎はさつまいもが主原料(発酵を助ける麹には米や麦を使います)。鹿児島・宮崎が主産地で、独特の甘い香りが特徴です。" },
+  { cat:"shochu", d:1, q:"本格焼酎の一般的なアルコール度数はおよそ?", c:["25%前後","5%前後","12%前後","40%前後"], exp:"焼酎は20〜25%が主流で、25%が最も一般的。ビール(約5%)や日本酒(約15%)より高く、お湯割りや水割りで楽しむのが定番です。" },
+  { cat:"shochu", d:1, q:"沖縄を代表する、米から造られる蒸留酒は?", c:["泡盛","日本酒","マッコリ","紹興酒"], exp:"泡盛は沖縄の蒸留酒。米(タイ米)と黒麹だけで仕込むのが特徴で、焼酎の仲間に分類されます。" },
+  { cat:"shochu", d:1, q:"チューハイやサワーのベースによく使われる、クセの少ない焼酎は?", c:["甲類焼酎","本格焼酎","泡盛","黒糖焼酎"], exp:"甲類焼酎(ホワイトリカー)は連続式蒸留で造る、ほぼ無味無臭のクリアな焼酎。果実酒作りやチューハイのベースに向きます。" },
+
+  { cat:"shochu", d:2, q:"単式蒸留で原料の風味を活かした焼酎の呼び名は?", c:["本格焼酎","甲類焼酎","スピリッツ","リキュール"], exp:"単式蒸留で造り、芋や麦など原料の個性が残る焼酎が本格焼酎(酒税法上は単式蒸留焼酎・乙類)。連続式でクリアな甲類と対になる分類です。" },
+  { cat:"shochu", d:2, q:"焼酎の「前割り」とはどんな飲み方?", c:["飲む前にあらかじめ水で割って寝かせる","お湯を先に注ぐ","原酒のまま冷やす","炭酸で割る"], exp:"前日などに焼酎と水を合わせて馴染ませておくのが前割り。角が取れてまろやかになり、九州では燗をつけて楽しむ通な飲み方です。" },
+  { cat:"shochu", d:2, q:"泡盛の仕込みに使われる麹は?", c:["黒麹","黄麹","紅麹","白麹"], exp:"泡盛は黒麹を使います。黒麹はクエン酸を多く出して雑菌の繁殖を抑えるため、温暖な沖縄でも安全に醸せるのです。" },
+  { cat:"shochu", d:2, q:"麦焼酎で有名な、長崎県の島は?", c:["壱岐","佐渡","淡路","隠岐"], exp:"壱岐(いき)は麦焼酎発祥の地とされ、地理的表示(GI)にも指定されています。米麹と麦で仕込むのが伝統的なスタイルです。" },
+  { cat:"shochu", d:2, q:"減圧蒸留で造った焼酎の一般的な特徴は?", c:["軽快でクリアな味わい","色が濃くなる","炭酸を含む","必ず度数が高い"], exp:"減圧蒸留は気圧を下げ低温で蒸留するため、雑味が少なく軽快でフルーティに。飲みやすい大分の麦焼酎などで広く使われます。" },
+
+  { cat:"shochu", d:3, q:"本格焼酎の二段仕込みで、芋や麦などの主原料を加えるのは?", c:["二次仕込み","一次仕込み","三次仕込み","本仕込み"], exp:"まず米麹と水・酵母で一次もろみ(酒母)を育て(一次仕込み)、そこへ主原料と水を加えるのが二次仕込み。安全に発酵を進める焼酎ならではの手法です。" },
+  { cat:"shochu", d:3, q:"焼酎麹がクエン酸を多く生成することの利点は?", c:["雑菌の繁殖を抑え腐敗を防ぐ","色を濃くする","甘みを強める","泡立ちを良くする"], exp:"温暖な九州・沖縄では、もろみが腐敗しやすいのが課題でした。クエン酸で酸性に保つ黒麹・白麹の働きが、安全な焼酎造りを支えています。" },
+  { cat:"shochu", d:3, q:"黒糖焼酎の生産が特例で認められている地域は?", c:["奄美群島","小笠原諸島","五島列島","佐渡島"], exp:"黒糖を主原料にする焼酎は、米麹を併用する条件で鹿児島県の奄美群島でのみ製造が認められています。ラム酒とは違う、米麹由来のまろやかさが特徴です。" },
+  { cat:"shochu", d:3, q:"常圧蒸留で造った焼酎の一般的な特徴は?", c:["原料由来の香味が力強く残る","無味無臭に近くなる","炭酸を含む","色が濃くなる"], exp:"常圧蒸留は昔ながらの製法で、芋や麦の香ばしい香味がしっかり残ります。クリアな減圧蒸留と対照的で、飲みごたえのある本格焼酎に向きます。" },
+  { cat:"shochu", d:3, q:"そば焼酎の発祥とされる県は?", c:["宮崎県","長野県","北海道","島根県"], exp:"そば焼酎は1970年代に宮崎県の蔵で誕生したとされます。そば特有の香ばしくすっきりした風味が楽しめます。" },
+
+  { cat:"shochu", d:4, q:"泡盛が「全麹仕込み」と呼ばれる理由は?", c:["すべて米麹で仕込み、二次原料を加えないから","麹を4回に分けて使うから","麦麹を使うから","麹をまったく使わないから"], exp:"一般的な焼酎が米麹で一次もろみを作り主原料を足すのに対し、泡盛は全量を米麹にして一度に仕込みます。これが泡盛独特の濃厚な旨味を生みます。" },
+  { cat:"shochu", d:4, q:"泡盛を3年以上熟成させたものの呼称は?", c:["古酒(クース)","新酒","荒酒","生酒"], exp:"泡盛は熟成でまろやかさと香りが増し、3年以上寝かせたものを古酒(クース)と呼びます。長期熟成させた100年古酒の言い伝えも残る、時間を味わうお酒です。" },
+  { cat:"shochu", d:4, q:"焼酎の地理的表示(GI)「球磨」が指す原料と産地は?", c:["米・熊本県","芋・鹿児島県","麦・大分県","そば・宮崎県"], exp:"球磨(くま)は熊本県人吉球磨地方の米焼酎のGI。ほかに壱岐(麦・長崎)、薩摩(芋・鹿児島)、琉球(泡盛・沖縄)が国税庁の地理的表示に指定されています。" },
+  { cat:"shochu", d:4, q:"焼酎「乙類」の酒税法上の正式名称は?", c:["単式蒸留焼酎","連続式蒸留焼酎","原料用アルコール","スピリッツ"], exp:"「乙類」は俗称で、正式には単式蒸留焼酎。イメージの良い「本格焼酎」の表示も使われます。一方の甲類は連続式蒸留焼酎が正式名称です。" },
+  { cat:"shochu", d:4, q:"焼酎の単式蒸留で最初に少量だけ得られる、度数の高い部分は?", c:["初垂れ(はなたれ)","末垂れ","中垂れ","荒走り"], exp:"蒸留の最初に出る初垂れ(はなたれ)は度数60%前後にもなる希少な部分。フレッシュで香り高く、限定商品として味わえることもあります。" },
 ];
 
 /* IDを付与(カテゴリ内の並び順ベース。カテゴリ末尾への追加なら進捗を保てる) */
@@ -815,6 +909,7 @@ const BADGES = [
   { id:"basic",     icon:"🔰", name:"きほんマスター",   desc:"お酒のきほんの図鑑をコンプ" },
   { id:"beer",      icon:"🍺", name:"ビール博士",       desc:"ビールの図鑑をコンプ" },
   { id:"sake",      icon:"🍶", name:"日本酒博士",       desc:"日本酒の図鑑をコンプ" },
+  { id:"shochu",    icon:"🍠", name:"焼酎・泡盛博士",   desc:"焼酎・泡盛の図鑑をコンプ" },
   { id:"wine",      icon:"🍷", name:"ワイン博士",       desc:"ワインの図鑑をコンプ" },
   { id:"whisky",    icon:"🥃", name:"ウイスキー博士",   desc:"ウイスキーの図鑑をコンプ" },
   { id:"cocktail",  icon:"🍸", name:"カクテル博士",     desc:"カクテルの図鑑をコンプ" },
@@ -870,6 +965,10 @@ function defaultState() {
     examBest: 0,      // 認定試験の最高スコア
     examPassed: false,// 認定試験に合格したか
     examFull: false,  // 認定試験で満点を取ったか
+    catStats: {},     // カテゴリ -> {ok, ng}(成績ダッシュボード用)
+    diffStats: {},    // 難易度 -> {ok, ng}
+    soundOn: true,    // 効果音のオン/オフ
+    hapticsOn: true,  // バイブのオン/オフ
   };
 }
 
@@ -987,6 +1086,51 @@ function showToast(msg) {
   document.body.appendChild(t);
   setTimeout(() => t.classList.add("show"), 10);
   setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2200);
+}
+
+/* 効果音(Web Audioで生成・ファイル不要でオフラインでも鳴る) */
+let _audioCtx = null;
+function audioCtx() {
+  if (!_audioCtx) {
+    try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch (e) { _audioCtx = null; }
+  }
+  if (_audioCtx && _audioCtx.state === "suspended") _audioCtx.resume();
+  return _audioCtx;
+}
+function tone(ctx, freq, start, dur, type, vol) {
+  const o = ctx.createOscillator(), g = ctx.createGain(), t0 = ctx.currentTime + start;
+  o.type = type || "sine";
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol || 0.2, t0 + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g); g.connect(ctx.destination);
+  o.start(t0); o.stop(t0 + dur + 0.03);
+}
+function playSound(kind) {
+  if (!state.soundOn) return;
+  const ctx = audioCtx();
+  if (!ctx) return;
+  if (kind === "correct") { tone(ctx, 660, 0, 0.12, "sine", 0.22); tone(ctx, 988, 0.09, 0.16, "sine", 0.22); }
+  else if (kind === "wrong") { tone(ctx, 196, 0, 0.24, "sawtooth", 0.14); tone(ctx, 147, 0.09, 0.26, "sawtooth", 0.12); }
+  else if (kind === "win") { [523, 659, 784, 1047].forEach((f, i) => tone(ctx, f, i * 0.1, 0.22, "triangle", 0.2)); }
+}
+function haptic(kind) {
+  if (!state.hapticsOn || !navigator.vibrate) return;
+  if (kind === "correct") navigator.vibrate(18);
+  else if (kind === "wrong") navigator.vibrate([28, 40, 28]);
+  else if (kind === "win") navigator.vibrate([20, 40, 20, 40, 70]);
+}
+
+/* 成績集計(カテゴリ/難易度ごとの正答率) */
+function bump(map, key, correct) {
+  const s = map[key] || (map[key] = { ok: 0, ng: 0 });
+  if (correct) s.ok++; else s.ng++;
+}
+function accOf(s) {
+  if (!s || (s.ok + s.ng) === 0) return null;
+  return Math.round(s.ok / (s.ok + s.ng) * 100);
 }
 
 /* ============================================================
@@ -1129,7 +1273,11 @@ function renderHome() {
       <button class="btn" id="btn-learn">📚 まなぶ</button>
       <button class="btn" id="btn-gloss">🔤 用語集</button>
       <button class="btn" id="btn-zukan">📖 図鑑</button>
+    </div>
+    <div class="nav-row">
       <button class="btn" id="btn-badges">🏆 バッジ</button>
+      <button class="btn" id="btn-stats">📊 成績</button>
+      <button class="btn" id="btn-settings">⚙️ 設定</button>
     </div>
     <div class="warning-note">お酒は20歳になってから。飲酒は適量を守って楽しみましょう。</div>
   </div>`;
@@ -1141,6 +1289,8 @@ function renderHome() {
   document.getElementById("btn-daily").addEventListener("click", startDaily);
   document.getElementById("btn-exam").addEventListener("click", renderExamIntro);
   document.getElementById("btn-learn").addEventListener("click", renderLearnList);
+  document.getElementById("btn-stats").addEventListener("click", renderStats);
+  document.getElementById("btn-settings").addEventListener("click", renderSettings);
   document.getElementById("btn-gloss").addEventListener("click", renderGlossary);
   document.getElementById("btn-zukan").addEventListener("click", renderZukan);
   document.getElementById("btn-badges").addEventListener("click", renderBadges);
@@ -1455,6 +1605,11 @@ function answer(btn, btns, q) {
   let bonusText = "";
   let newCard = false;
 
+  bump(state.catStats, q.cat, isCorrect);
+  bump(state.diffStats, q.d, isCorrect);
+  playSound(isCorrect ? "correct" : "wrong");
+  haptic(isCorrect ? "correct" : "wrong");
+
   if (isCorrect) {
     session.ok++;
     session.combo++;
@@ -1528,6 +1683,7 @@ function renderResult() {
   const perfect = session.ok === session.qIds.length;
   const earned = checkBadges({ perfect });
   saveState();
+  if (perfect || afterLv > beforeLv || earned.length) { playSound("win"); haptic("win"); }
 
   const total = session.qIds.length;
   const streak = currentStreak();
@@ -1632,6 +1788,7 @@ function renderExamResult() {
   if (score >= EXAM_SIZE) state.examFull = true;
   const earned = checkBadges({ perfect: score === total });
   saveState();
+  if (rank.pass) { playSound("win"); haptic("win"); }
 
   const dateLabel = todayStr().replace(/-/g, ".");
   const shareText = rank.pass
@@ -1760,12 +1917,175 @@ function renderBadges() {
 }
 
 /* ============================================================
+   画面:成績ダッシュボード
+   ============================================================ */
+function renderStats() {
+  const totalAns = state.totalOk + state.totalNg;
+  const acc = totalAns > 0 ? Math.round(state.totalOk / totalAns * 100) : 0;
+
+  // 難易度別
+  const diffRows = [1, 2, 3, 4].map(d => {
+    const a = accOf(state.diffStats[d]);
+    const s = state.diffStats[d] || { ok: 0, ng: 0 };
+    return `<div class="stat-bar-row">
+      <span class="sb-label"><span class="stars">${DIFFS[d].stars}</span> ${DIFFS[d].name}</span>
+      <div class="sb-track"><div class="sb-fill" style="width:${a == null ? 0 : a}%"></div></div>
+      <span class="sb-val">${a == null ? "—" : a + "%"}<small>${s.ok + s.ng}問</small></span>
+    </div>`;
+  }).join("");
+
+  // カテゴリ別(図鑑到達 + 正答率)
+  const catData = Object.entries(CATS).map(([key, c]) => {
+    const qs = questionsOf(key);
+    const got = qs.filter(q => state.unlocked[q.id]).length;
+    const a = accOf(state.catStats[key]);
+    return { key, c, got, total: qs.length, acc: a };
+  });
+  const catRows = catData.map(({ c, got, total, acc: a }) => `
+    <div class="stat-bar-row">
+      <span class="sb-label">${c.icon} ${esc(c.name)}</span>
+      <div class="sb-track"><div class="sb-fill" style="width:${Math.round(got / total * 100)}%"></div></div>
+      <span class="sb-val">図鑑${got}/${total}<small>${a == null ? "正答率—" : "正答率" + a + "%"}</small></span>
+    </div>`).join("");
+
+  // 弱点ジャンル(2問以上回答して正答率が最も低い)
+  const answered = catData.filter(d => d.acc != null && (state.catStats[d.key].ok + state.catStats[d.key].ng) >= 2);
+  answered.sort((a, b) => a.acc - b.acc);
+  const weak = answered[0];
+  const wrongCount = wrongList().length;
+
+  $app.innerHTML = `
+  <div class="screen">
+    <button class="btn back-btn" id="btn-back">← ホーム</button>
+    <div class="section-title" style="margin-top:0">📊 成績</div>
+
+    <div class="stat-row" style="margin-bottom:16px">
+      <div class="stat"><b>${acc}%</b><span>総合正答率</span></div>
+      <div class="stat"><b>${totalAns}</b><span>回答数</span></div>
+      <div class="stat"><b>${state.expertOk}</b><span>達人正解</span></div>
+      <div class="stat"><b>${wrongCount}</b><span>苦手</span></div>
+    </div>
+
+    ${weak ? `<div class="weak-note">🎯 いま伸ばすなら <b>${weak.c.icon} ${esc(weak.c.name)}</b>(正答率${weak.acc}%)。集中的に挑戦してみよう!</div>` : `<div class="weak-note">クイズに挑戦すると、ここに弱点ジャンルの分析が出ます。</div>`}
+
+    <div class="stats-title">難易度別の正答率</div>
+    <div class="stat-bars">${diffRows}</div>
+
+    <div class="stats-title">ジャンル別の到達度</div>
+    <div class="stat-bars">${catRows}</div>
+
+    ${wrongCount > 0 ? `<button class="btn primary block" id="btn-rev" style="margin-top:16px">❌ 苦手を復習する(${wrongCount}問)</button>` : ""}
+  </div>`;
+
+  document.getElementById("btn-back").addEventListener("click", renderHome);
+  const rev = document.getElementById("btn-rev");
+  if (rev) rev.addEventListener("click", startReviewSession);
+}
+
+/* ============================================================
+   画面:設定(効果音・バイブ・データ管理)
+   ============================================================ */
+function renderSettings() {
+  const toggle = (on, id, label, desc) => `
+    <div class="setting-row">
+      <div class="setting-text"><b>${label}</b><small>${desc}</small></div>
+      <button class="switch ${on ? "on" : ""}" id="${id}" role="switch" aria-checked="${on}" aria-label="${label}"><span class="knob"></span></button>
+    </div>`;
+
+  $app.innerHTML = `
+  <div class="screen">
+    <button class="btn back-btn" id="btn-back">← ホーム</button>
+    <div class="section-title" style="margin-top:0">⚙️ 設定</div>
+
+    <div class="setting-group">
+      ${toggle(state.soundOn, "sw-sound", "🔊 効果音", "正解・不正解・レベルアップの音")}
+      ${toggle(state.hapticsOn, "sw-haptic", "📳 バイブ", "対応端末で振動フィードバック")}
+    </div>
+
+    <div class="stats-title">データ管理</div>
+    <div class="setting-group">
+      <button class="btn block" id="btn-export">📤 進捗をコピー(バックアップ)</button>
+      <button class="btn block" id="btn-import" style="margin-top:8px">📥 進捗を復元(貼り付け)</button>
+      <div id="import-area"></div>
+      <button class="btn block reset-btn" id="btn-reset" style="margin-top:8px">🗑️ 進捗をリセット</button>
+      <div id="reset-area"></div>
+    </div>
+    <div class="warning-note" style="margin-top:20px">進捗はこの端末のブラウザ内に保存されています。バックアップのテキストを控えておくと、機種変更時に復元できます。</div>
+  </div>`;
+
+  document.getElementById("btn-back").addEventListener("click", renderHome);
+
+  document.getElementById("sw-sound").addEventListener("click", () => {
+    state.soundOn = !state.soundOn; saveState();
+    if (state.soundOn) playSound("correct");
+    renderSettings();
+  });
+  document.getElementById("sw-haptic").addEventListener("click", () => {
+    state.hapticsOn = !state.hapticsOn; saveState();
+    if (state.hapticsOn) haptic("correct");
+    renderSettings();
+  });
+
+  document.getElementById("btn-export").addEventListener("click", async () => {
+    const data = JSON.stringify(state);
+    try { await navigator.clipboard.writeText(data); showToast("進捗をコピーしました📋"); }
+    catch (e) { showToast("コピーできませんでした"); }
+  });
+
+  document.getElementById("btn-import").addEventListener("click", () => {
+    const area = document.getElementById("import-area");
+    area.innerHTML = `
+      <textarea id="import-text" class="import-text" placeholder="バックアップしたテキストを貼り付け"></textarea>
+      <button class="btn primary block" id="btn-import-do">この内容で復元する</button>`;
+    document.getElementById("btn-import-do").addEventListener("click", () => {
+      const txt = document.getElementById("import-text").value.trim();
+      try {
+        const obj = JSON.parse(txt);
+        if (!obj || typeof obj !== "object") throw new Error();
+        state = Object.assign(defaultState(), obj);
+        saveState();
+        showToast("進捗を復元しました✅");
+        renderSettings();
+      } catch (e) { showToast("復元できませんでした(形式エラー)"); }
+    });
+  });
+
+  document.getElementById("btn-reset").addEventListener("click", () => {
+    const area = document.getElementById("reset-area");
+    area.innerHTML = `
+      <div class="confirm-box">本当に全ての進捗を消しますか?この操作は元に戻せません。
+        <div class="confirm-btns">
+          <button class="btn" id="btn-reset-cancel">キャンセル</button>
+          <button class="btn reset-btn" id="btn-reset-do">リセットする</button>
+        </div>
+      </div>`;
+    document.getElementById("btn-reset-cancel").addEventListener("click", () => { area.innerHTML = ""; });
+    document.getElementById("btn-reset-do").addEventListener("click", () => {
+      state = defaultState();
+      saveState();
+      showToast("進捗をリセットしました");
+      renderSettings();
+    });
+  });
+}
+
+/* ============================================================
    起動
    ============================================================ */
 renderHome();
 
-/* Service Worker 登録(オフライン対応・ホーム画面に追加) */
+/* Service Worker 登録(オフライン対応・ホーム画面に追加)
+   すでに制御下にあるページで新バージョンが有効化されたら自動で再読み込み。
+   初回訪問(未制御)ではリロードしないので、画面がちらつかない */
 if ("serviceWorker" in navigator) {
+  if (navigator.serviceWorker.controller) {
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (reloading) return;
+      reloading = true;
+      location.reload();
+    });
+  }
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").catch(() => { /* 未対応環境は無視 */ });
   });
