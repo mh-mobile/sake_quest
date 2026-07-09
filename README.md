@@ -75,6 +75,8 @@ apple-touch-icon.png    iOS ホーム画面用アイコン
 favicon.ico             ファビコン
 ogp.png                 OGP / Twitter カード画像（1200x630）
 icon.svg / icon-maskable.svg   アイコンの元データ
+tests/app.test.js       自動テスト（データ検査＋ロジック）
+.github/workflows/ci.yml   CI（プッシュごとに構文チェック＋テスト）
 ```
 
 ## 🧑‍💻 開発メモ
