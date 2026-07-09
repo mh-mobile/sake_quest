@@ -4,6 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>酒クエスト 〜お酒の知識クイズ〜</title>
+<meta name="description" content="ビール・日本酒・ワイン・ウイスキー・カクテルの知識を、あそんで極めるクイズアプリ。全172問・達人難易度・エキスパート認定試験に挑戦しよう。">
+<link rel="canonical" href="https://mh-mobile.github.io/sake_quest/">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#14100c">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="酒クエスト">
+
+<!-- OGP / Twitter -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="酒クエスト">
+<meta property="og:title" content="酒クエスト 〜お酒の知識クイズ〜">
+<meta property="og:description" content="お酒の知識、あそんで極める。全172問・達人難易度・エキスパート認定試験に挑戦しよう。">
+<meta property="og:url" content="https://mh-mobile.github.io/sake_quest/">
+<meta property="og:image" content="https://mh-mobile.github.io/sake_quest/ogp.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="酒クエスト 〜お酒の知識クイズ〜">
+<meta name="twitter:description" content="お酒の知識、あそんで極める。全172問・達人難易度・エキスパート認定試験。">
+<meta name="twitter:image" content="https://mh-mobile.github.io/sake_quest/ogp.png">
 <style>
   :root {
     --bg: #14100c;
@@ -321,6 +348,81 @@
 
   .back-btn { margin-bottom: 16px; }
   .warning-note { text-align: center; font-size: 11px; color: var(--muted); margin-top: 32px; }
+
+  /* ---------- 腕試し(デイリー/認定試験) ---------- */
+  .challenge-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 8px; }
+  .challenge-btn {
+    display: flex; align-items: center; gap: 12px; text-align: left;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; color: var(--text); cursor: pointer; font: inherit;
+    background: linear-gradient(135deg, rgba(240,168,50,.10), var(--card));
+    transition: transform .08s ease, border-color .15s ease;
+  }
+  .challenge-btn:active { transform: scale(.98); }
+  .challenge-btn .cicon { font-size: 26px; flex-shrink: 0; }
+  .challenge-btn .ctext { flex: 1; display: flex; flex-direction: column; }
+  .challenge-btn .cname { font-weight: 800; font-size: 15px; }
+  .challenge-btn .cdesc { font-size: 12px; color: var(--muted); }
+  .challenge-btn .cbadge {
+    font-weight: 800; font-size: 13px; color: var(--gold);
+    background: rgba(0,0,0,.25); border-radius: 999px; padding: 4px 10px; flex-shrink: 0;
+  }
+  .challenge-btn.exam { border-color: var(--amber-dim); background: linear-gradient(135deg, rgba(240,168,50,.16), rgba(106,168,224,.06)); }
+  .challenge-btn.daily { border-color: rgba(240,168,50,.4); }
+  .challenge-btn.done { opacity: .82; }
+
+  .streak-banner {
+    text-align: center; font-weight: 800; font-size: 15px; color: var(--gold);
+    background: linear-gradient(135deg, rgba(240,168,50,.18), rgba(224,92,92,.1));
+    border: 1px solid var(--amber-dim); border-radius: 12px; padding: 12px; margin-bottom: 12px;
+    animation: pop .4s ease;
+  }
+  .streak-banner small { display: block; font-weight: 600; font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* ---------- 認定試験 ---------- */
+  .exam-intro { text-align: center; padding: 8px 4px; }
+  .exam-intro .exam-badge { font-size: 52px; }
+  .exam-intro h2 { font-size: 21px; font-weight: 800; margin: 8px 0; }
+  .exam-intro > p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+  .exam-intro > p b { color: var(--gold); }
+  .exam-rules {
+    list-style: none; text-align: left; margin: 18px auto 0; max-width: 420px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .exam-rules li {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; font-size: 13px; color: var(--text);
+  }
+  .exam-best {
+    margin-top: 14px; font-weight: 800; font-size: 14px; color: var(--gold);
+    background: rgba(240,168,50,.1); border: 1px solid var(--amber-dim);
+    border-radius: 10px; padding: 10px;
+  }
+
+  .certificate {
+    text-align: center; border-radius: 16px; padding: 22px 18px; margin: 8px 0 4px;
+    background: linear-gradient(160deg, var(--card-hi), var(--card));
+    border: 2px solid var(--amber-dim); position: relative;
+  }
+  .certificate.fail { border-color: var(--border); opacity: .92; }
+  .certificate .cert-head { letter-spacing: .5em; font-size: 13px; color: var(--muted); font-weight: 700; padding-left: .5em; }
+  .certificate .cert-rank { font-size: 26px; font-weight: 800; color: var(--gold); margin: 10px 0 2px; }
+  .certificate .cert-grade { font-size: 13px; color: var(--muted); font-weight: 700; }
+  .certificate .cert-score { font-size: 15px; margin: 12px 0; }
+  .certificate .cert-score b { font-size: 30px; color: var(--amber); }
+  .certificate .cert-foot { font-size: 11px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 10px; margin-top: 6px; }
+
+  .share-btn { color: var(--blue); border-color: rgba(106,168,224,.5); font-weight: 700; }
+
+  /* ---------- トースト ---------- */
+  #toast {
+    position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 20px);
+    background: #322a20; color: var(--text); border: 1px solid var(--border);
+    padding: 12px 20px; border-radius: 999px; font-size: 14px; font-weight: 700;
+    opacity: 0; transition: opacity .3s ease, transform .3s ease; z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
 </style>
 </head>
 <body>
@@ -704,6 +806,9 @@ const BADGES = [
   { id:"revenge",   icon:"💪", name:"リベンジ成功",     desc:"復習モードで10問正解" },
   { id:"hard30",    icon:"🧗", name:"求道者",           desc:"上級問題を30問正解" },
   { id:"expert20",  icon:"🎖️", name:"酒のエキスパート", desc:"達人問題を20問正解" },
+  { id:"daily7",    icon:"📅", name:"皆勤賞",           desc:"デイリーを7日連続で達成" },
+  { id:"examPass",  icon:"📜", name:"認定エキスパート", desc:"エキスパート認定試験に合格" },
+  { id:"examFull",  icon:"💯", name:"満点マイスター",   desc:"認定試験で満点を取る" },
   { id:"level5",    icon:"🏅", name:"利き酒師見習い",   desc:"レベル5に到達する" },
   { id:"level10",   icon:"🏆", name:"伝説の酒仙",       desc:"レベル10に到達する" },
   { id:"sessions10",icon:"🪑", name:"常連さん",         desc:"10回セッションをプレイ" },
@@ -758,6 +863,13 @@ function defaultState() {
     wrong: {},        // 問題id -> true(要復習)
     lessonsRead: {},  // カテゴリ -> true
     badges: {},       // badgeId -> true
+    streak: 0,        // デイリー連続日数
+    bestStreak: 0,    // 連続日数の最高記録
+    lastDailyDate: null, // 最後にデイリーを達成した日
+    dailyDoneDate: null, // 今日デイリーを達成済みか判定用
+    examBest: 0,      // 認定試験の最高スコア
+    examPassed: false,// 認定試験に合格したか
+    examFull: false,  // 認定試験で満点を取ったか
   };
 }
 
@@ -800,6 +912,83 @@ function wrongList() {
   return QUESTIONS.filter(q => state.wrong[q.id]);
 }
 
+const SITE_URL = "https://mh-mobile.github.io/sake_quest/";
+
+/* 日付ユーティリティ(ローカル日付 YYYY-MM-DD) */
+function dateStr(d) {
+  return d.getFullYear() + "-" +
+    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+    String(d.getDate()).padStart(2, "0");
+}
+function todayStr() { return dateStr(new Date()); }
+function yesterdayStr() { const d = new Date(); d.setDate(d.getDate() - 1); return dateStr(d); }
+
+/* シード付き乱数(デイリーチャレンジの固定出題用) */
+function seedFromStr(s) {
+  let h = 1779033703 ^ s.length;
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(h ^ s.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return () => {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  };
+}
+function seededShuffle(arr, rnd) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* 現在の連続日数(昨日か今日に達成していれば継続、途切れていれば0) */
+function currentStreak() {
+  if (!state.lastDailyDate) return 0;
+  const t = todayStr(), y = yesterdayStr();
+  if (state.lastDailyDate === t || state.lastDailyDate === y) return state.streak || 0;
+  return 0;
+}
+function isDailyDoneToday() { return state.dailyDoneDate === todayStr(); }
+
+/* デイリー達成を記録(1日1回だけ連続日数を加算) */
+function completeDaily() {
+  const t = todayStr();
+  if (state.dailyDoneDate === t) return;
+  state.streak = (state.lastDailyDate === yesterdayStr()) ? (state.streak || 0) + 1 : 1;
+  state.lastDailyDate = t;
+  state.dailyDoneDate = t;
+  if (state.streak > (state.bestStreak || 0)) state.bestStreak = state.streak;
+}
+
+/* 結果シェア(Web Share があれば使用、なければクリップボードにコピー) */
+async function shareResult(text) {
+  const payload = { title: "酒クエスト", text, url: SITE_URL };
+  try {
+    if (navigator.share) { await navigator.share(payload); return; }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  try {
+    await navigator.clipboard.writeText(text + "\n" + SITE_URL);
+    showToast("結果をコピーしました📋");
+  } catch (e) {
+    showToast("コピーできませんでした");
+  }
+}
+function showToast(msg) {
+  const old = document.getElementById("toast");
+  if (old) old.remove();
+  const t = document.createElement("div");
+  t.id = "toast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add("show"), 10);
+  setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 2200);
+}
+
 /* ============================================================
    バッジ判定
    ============================================================ */
@@ -818,6 +1007,9 @@ function checkBadges(ctx) {
   if (state.reviewOk >= 10) award("revenge");
   if (state.hardOk >= 30) award("hard30");
   if (state.expertOk >= 20) award("expert20");
+  if ((state.bestStreak || 0) >= 7) award("daily7");
+  if (state.examPassed) award("examPass");
+  if (state.examFull) award("examFull");
   const lv = levelFromXp(state.xp);
   if (lv >= 5) award("level5");
   if (lv >= 10) award("level10");
@@ -847,6 +1039,8 @@ function renderHome() {
   const acc = state.totalOk + state.totalNg > 0
     ? Math.round(state.totalOk / (state.totalOk + state.totalNg) * 100) : 0;
   const wrongCount = wrongList().length;
+  const streak = currentStreak();
+  const dailyDone = isDailyDoneToday();
   const isNewbie = state.sessions === 0 && Object.keys(state.lessonsRead).length === 0;
 
   const catBtns = Object.entries(CATS).map(([key, c]) => {
@@ -893,7 +1087,27 @@ function renderHome() {
       <div class="stat"><b>${acc}%</b><span>正答率</span></div>
       <div class="stat"><b>${unlocked}/${total}</b><span>図鑑</span></div>
       <div class="stat"><b>${badgeCount}/${BADGES.length}</b><span>バッジ</span></div>
-      <div class="stat"><b>${state.bestCombo}</b><span>最高コンボ</span></div>
+      <div class="stat"><b>${streak}</b><span>連続日数</span></div>
+    </div>
+
+    <div class="section-title">⭐ 腕試し</div>
+    <div class="challenge-grid">
+      <button class="challenge-btn ${dailyDone ? "done" : "daily"}" id="btn-daily">
+        <span class="cicon">${dailyDone ? "✅" : "☀️"}</span>
+        <div class="ctext">
+          <span class="cname">今日のいち杯</span>
+          <span class="cdesc">${dailyDone ? "今日は達成済み・もう一度" : "日替わり" + DAILY_SIZE + "問"}</span>
+        </div>
+        <span class="cbadge">🔥${streak}</span>
+      </button>
+      <button class="challenge-btn exam" id="btn-exam">
+        <span class="cicon">🏅</span>
+        <div class="ctext">
+          <span class="cname">エキスパート認定試験</span>
+          <span class="cdesc">${state.examPassed ? "合格済 ・ 自己最高 " + state.examBest + "/" + EXAM_SIZE : "全" + EXAM_SIZE + "問・合格" + Math.round(EXAM_PASS / EXAM_SIZE * 100) + "%"}</span>
+        </div>
+        <span class="cbadge">${state.examPassed ? "🎓" : "▶"}</span>
+      </button>
     </div>
 
     <div class="section-title">🎯 クイズに挑戦(10問)</div>
@@ -924,6 +1138,8 @@ function renderHome() {
     btn.addEventListener("click", () => renderDifficulty(btn.dataset.cat || null));
   });
   document.getElementById("btn-review").addEventListener("click", startReviewSession);
+  document.getElementById("btn-daily").addEventListener("click", startDaily);
+  document.getElementById("btn-exam").addEventListener("click", renderExamIntro);
   document.getElementById("btn-learn").addEventListener("click", renderLearnList);
   document.getElementById("btn-gloss").addEventListener("click", renderGlossary);
   document.getElementById("btn-zukan").addEventListener("click", renderZukan);
@@ -1047,6 +1263,9 @@ function renderLesson(cat) {
 const SESSION_SIZE = 10;
 const TIME_LIMIT = 20;      // 秒
 const SPEED_THRESHOLD = 12; // 残り12秒以上で正解ならスピードボーナス
+const DAILY_SIZE = 5;       // デイリーチャレンジの問題数
+const EXAM_SIZE = 20;       // 認定試験の問題数
+const EXAM_PASS = 16;       // 認定試験の合格ライン(20問中)
 
 let session = null;
 let timerId = null;
@@ -1081,6 +1300,30 @@ function startReviewSession() {
   buildSession(pool.slice(0, Math.min(SESSION_SIZE, pool.length)), { cat: null, diff: null, isReview: true });
 }
 
+/* デイリーチャレンジ:日付ごとに固定の問題を出題(全難易度ミックス) */
+function dailyQuestions() {
+  const rnd = seedFromStr("sake-daily-" + todayStr());
+  return seededShuffle(QUESTIONS, rnd).slice(0, DAILY_SIZE);
+}
+function startDaily() {
+  buildSession(dailyQuestions(), { cat: null, diff: null, isDaily: true });
+}
+
+/* エキスパート認定試験:全ジャンル横断・上級以上を中心に20問 */
+function examQuestions() {
+  const pick = (d, n) => shuffle(questionsOf(null, d)).slice(0, n);
+  let picked = pick(4, 7).concat(pick(3, 7)).concat(pick(2, 6));
+  // 万一足りなければ他の問題で補完
+  if (picked.length < EXAM_SIZE) {
+    const ids = new Set(picked.map(q => q.id));
+    picked = picked.concat(shuffle(QUESTIONS.filter(q => !ids.has(q.id))).slice(0, EXAM_SIZE - picked.length));
+  }
+  return shuffle(picked).slice(0, EXAM_SIZE);
+}
+function startExam() {
+  buildSession(examQuestions(), { cat: null, diff: null, isExam: true });
+}
+
 function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
 
 function qById(id) { return QUESTIONS.find(q => q.id === id); }
@@ -1110,6 +1353,8 @@ function renderQuestion() {
         <span class="pill">${cat.icon} ${cat.name}</span>
         <span class="pill"><span class="stars">${DIFFS[q.d].stars}</span> ${DIFFS[q.d].name}</span>
         ${session.isReview ? `<span class="pill">💪 復習</span>` : ""}
+        ${session.isDaily ? `<span class="pill">☀️ デイリー</span>` : ""}
+        ${session.isExam ? `<span class="pill">🏅 認定試験</span>` : ""}
       </div>
       <div class="question-text">${linkTerms(esc(q.q), excludeForQuestion(q))}</div>
     </div>
@@ -1275,6 +1520,8 @@ function nextQuestion() {
    画面:リザルト
    ============================================================ */
 function renderResult() {
+  if (session.isExam) { renderExamResult(); return; }
+  if (session.isDaily) completeDaily();
   state.sessions++;
   const beforeLv = levelFromXp(session.startXp);
   const afterLv = levelFromXp(state.xp);
@@ -1283,11 +1530,16 @@ function renderResult() {
   saveState();
 
   const total = session.qIds.length;
+  const streak = currentStreak();
   let heroIcon, heroMsg, heroSub;
   if (perfect)                        { heroIcon = "👑"; heroMsg = "パーフェクト!"; heroSub = "完璧です。乾杯!"; }
   else if (session.ok >= total * 0.7) { heroIcon = "🍻"; heroMsg = "お見事!";       heroSub = "かなりの酒通ですね"; }
   else if (session.ok >= total * 0.4) { heroIcon = "🍺"; heroMsg = "まずまず!";     heroSub = "図鑑で復習してもう一杯"; }
   else                                { heroIcon = "🫗"; heroMsg = "これから!";     heroSub = "きほんノートを読んでリベンジ!"; }
+
+  const shareText = session.isDaily
+    ? `酒クエストの「今日のいち杯」で${session.ok}/${total}問正解!🔥${streak}日連続中`
+    : `酒クエストで${session.ok}/${total}問正解!獲得${session.xpGain}XP`;
 
   $app.innerHTML = `
   <div class="screen">
@@ -1297,6 +1549,8 @@ function renderResult() {
       <p>${heroSub}</p>
     </div>
     <div class="result-score"><b>${session.ok}</b><span> / ${total} 問正解</span></div>
+
+    ${session.isDaily ? `<div class="streak-banner">🔥 ${streak}日連続達成中!<small>${state.bestStreak > streak ? "最高記録 " + state.bestStreak + "日" : "自己最高を更新中"}</small></div>` : ""}
 
     <div class="gain-list">
       <div class="gain"><span>💰 獲得XP</span><b>+${session.xpGain} XP</b></div>
@@ -1312,18 +1566,104 @@ function renderResult() {
 
     ${earned.map(b => `<div class="badge-earn"><span style="font-size:22px">${b.icon}</span> バッジ獲得:${esc(b.name)}</div>`).join("")}
 
-    <button class="btn primary block" id="btn-again" style="margin-top:8px">もう一度挑戦 🍺</button>
+    <button class="btn share-btn block" id="btn-share" style="margin-top:8px">📤 結果をシェア</button>
+    <button class="btn primary block" id="btn-again" style="margin-top:10px">${session.isDaily ? "もう一度 🍺" : "もう一度挑戦 🍺"}</button>
     <button class="btn block" id="btn-home" style="margin-top:10px">ホームへ戻る</button>
   </div>`;
 
+  document.getElementById("btn-share").addEventListener("click", () => shareResult(shareText));
   document.getElementById("btn-again").addEventListener("click", () => {
     if (session.isReview) {
       if (wrongList().length > 0) startReviewSession();
       else renderHome();
+    } else if (session.isDaily) {
+      startDaily();
     } else {
       startSession(session.cat, session.diff);
     }
   });
+  document.getElementById("btn-home").addEventListener("click", renderHome);
+}
+
+/* ============================================================
+   画面:エキスパート認定試験(イントロ)
+   ============================================================ */
+function renderExamIntro() {
+  stopTimer();
+  onKey = null;
+  $app.innerHTML = `
+  <div class="screen">
+    <button class="btn back-btn" id="btn-back">← ホーム</button>
+    <div class="exam-intro">
+      <div class="exam-badge">🏅</div>
+      <h2>エキスパート認定試験</h2>
+      <p>全ジャンル横断・上級以上を中心とした<b>${EXAM_SIZE}問</b>の一発勝負。<b>${EXAM_PASS}問(${Math.round(EXAM_PASS / EXAM_SIZE * 100)}%)</b>以上で合格し、認定証と称号を獲得できます。</p>
+      <ul class="exam-rules">
+        <li>🍶 ビール・日本酒・ワイン・ウイスキー・カクテルなどから幅広く出題</li>
+        <li>⏱️ 各問${TIME_LIMIT}秒。素早い正解でボーナスXP</li>
+        <li>📜 スコアに応じて「認定エキスパート」「酒匠」「マスターソムリエ」に認定</li>
+      </ul>
+      ${state.examPassed ? `<div class="exam-best">🎓 合格済み ・ 自己最高 ${state.examBest}/${EXAM_SIZE}</div>` : ""}
+      <button class="btn primary block" id="btn-start-exam" style="margin-top:14px">試験を始める 🏁</button>
+    </div>
+  </div>`;
+  document.getElementById("btn-back").addEventListener("click", renderHome);
+  document.getElementById("btn-start-exam").addEventListener("click", startExam);
+}
+
+/* ============================================================
+   画面:認定試験リザルト(認定証)
+   ============================================================ */
+function examRank(score) {
+  if (score >= EXAM_SIZE)      return { name: "マスターソムリエ", grade: "S", icon: "👑", pass: true };
+  if (score >= 18)             return { name: "酒匠(さかしょう)", grade: "A", icon: "🏆", pass: true };
+  if (score >= EXAM_PASS)      return { name: "認定エキスパート", grade: "B", icon: "🎖️", pass: true };
+  return { name: "見習い酒徒", grade: "—", icon: "🫗", pass: false };
+}
+function renderExamResult() {
+  state.sessions++;
+  const total = session.qIds.length;
+  const score = session.ok;
+  const rank = examRank(score);
+  const pct = Math.round(score / total * 100);
+  const newBest = score > (state.examBest || 0);
+  if (newBest) state.examBest = score;
+  if (rank.pass) state.examPassed = true;
+  if (score >= EXAM_SIZE) state.examFull = true;
+  const earned = checkBadges({ perfect: score === total });
+  saveState();
+
+  const dateLabel = todayStr().replace(/-/g, ".");
+  const shareText = rank.pass
+    ? `酒クエストのエキスパート認定試験に合格!${score}/${total}点で称号『${rank.name}』を獲得🎖️`
+    : `酒クエストのエキスパート認定試験に挑戦!${score}/${total}点。次こそ合格するぞ🔥`;
+
+  $app.innerHTML = `
+  <div class="screen">
+    <div class="result-hero">
+      <div class="big">${rank.icon}</div>
+      <h2>${rank.pass ? "合格!" : "残念…"}</h2>
+      <p>${rank.pass ? "エキスパートの称号を授与します" : `あと${EXAM_PASS - score}問で合格でした`}</p>
+    </div>
+
+    <div class="certificate ${rank.pass ? "pass" : "fail"}">
+      <div class="cert-head">認 定 証</div>
+      <div class="cert-rank">${rank.icon} ${esc(rank.name)}</div>
+      <div class="cert-grade">評価 ${rank.grade}</div>
+      <div class="cert-score"><b>${score}</b> / ${total} 問正解(${pct}%)</div>
+      <div class="cert-foot">酒クエスト エキスパート認定試験 ・ ${dateLabel}</div>
+    </div>
+
+    ${newBest ? `<div class="levelup">🎉 自己最高スコア更新! ${score}/${total}</div>` : ""}
+    ${earned.map(b => `<div class="badge-earn"><span style="font-size:22px">${b.icon}</span> バッジ獲得:${esc(b.name)}</div>`).join("")}
+
+    <button class="btn share-btn block" id="btn-share" style="margin-top:8px">📤 結果をシェア</button>
+    <button class="btn primary block" id="btn-again" style="margin-top:10px">もう一度受験 🏁</button>
+    <button class="btn block" id="btn-home" style="margin-top:10px">ホームへ戻る</button>
+  </div>`;
+
+  document.getElementById("btn-share").addEventListener("click", () => shareResult(shareText));
+  document.getElementById("btn-again").addEventListener("click", startExam);
   document.getElementById("btn-home").addEventListener("click", renderHome);
 }
 
@@ -1423,6 +1763,13 @@ function renderBadges() {
    起動
    ============================================================ */
 renderHome();
+
+/* Service Worker 登録(オフライン対応・ホーム画面に追加) */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => { /* 未対応環境は無視 */ });
+  });
+}
 </script>
 </body>
 </html>
