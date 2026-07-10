@@ -334,6 +334,14 @@
   .zukan-item .za { color: var(--gold); font-weight: 800; font-size: 13px; margin-bottom: 4px; }
   .zukan-item .zexp { color: var(--muted); }
   .zukan-item.locked { color: var(--muted); text-align: center; font-weight: 700; opacity: .6; }
+  .zukan-item .zmark { margin-right: 6px; font-size: 12px; }
+  .zukan-diff-title {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 800; color: var(--muted); margin: 12px 0 6px;
+  }
+  .zukan-diff-title .zdprog { margin-left: auto; color: var(--gold); font-size: 11px; }
+  .dprog { font-size: 11px; color: var(--gold); font-weight: 700; margin-top: 2px; }
+  .dprog.done { color: var(--green); }
 
   /* ---------- バッジ ---------- */
   .badge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -1350,11 +1358,14 @@ function renderDifficulty(cat) {
   const diffBtns = [1, 2, 3, 4].map(d => {
     const pool = questionsOf(cat, d);
     const ok = pool.length >= 5;
+    const got = pool.filter(q => state.unlocked[q.id]).length;
+    const done = ok && got === pool.length;
     return `<button class="diff-btn" data-diff="${d}" ${ok ? "" : "disabled"}>
       <span class="dicon">${["🌱","🌿","🌳","🏆"][d - 1]}</span>
       <div>
         <div class="dname">${DIFFS[d].name} <span class="stars">${DIFFS[d].stars}</span></div>
-        <div class="ddesc">${ok ? DIFFS[d].desc + "(" + pool.length + "問)" : "問題数が足りません"}</div>
+        <div class="ddesc">${ok ? DIFFS[d].desc : "問題数が足りません"}</div>
+        ${ok ? `<div class="dprog ${done ? "done" : ""}">${done ? "✅ 全問正解済み!" : "✅ 正解済み " + got + "/" + pool.length + "問"}</div>` : ""}
       </div>
       <span class="dxp">${DIFFS[d].xp}XP/問</span>
     </button>`;
@@ -1944,18 +1955,26 @@ function renderZukan() {
   const sections = Object.entries(CATS).map(([key, c]) => {
     const qs = questionsOf(key);
     const gotCat = qs.filter(q => state.unlocked[q.id]).length;
-    const items = qs.map(q => {
-      if (state.unlocked[q.id]) {
-        return `<div class="zukan-item">
-          <div class="zq"><span class="stars">${DIFFS[q.d].stars}</span>${linkTerms(esc(q.q))}</div>
-          <div class="za">A. ${esc(q.c[0])}</div>
-          <div class="zexp">${linkTerms(esc(q.exp))}</div>
-        </div>`;
-      }
-      return `<div class="zukan-item locked">🔒 ??? — クイズに正解すると解放</div>`;
+    // 難易度ごとにまとめて表示(どの難易度がどこまで正解済みか分かりやすく)
+    const groups = [1, 2, 3, 4].map(d => {
+      const dqs = qs.filter(q => q.d === d);
+      if (dqs.length === 0) return "";
+      const gotD = dqs.filter(q => state.unlocked[q.id]).length;
+      const items = dqs.map(q => {
+        if (state.unlocked[q.id]) {
+          return `<div class="zukan-item">
+            <div class="zq"><span class="zmark">✅</span>${linkTerms(esc(q.q))}</div>
+            <div class="za">A. ${esc(q.c[0])}</div>
+            <div class="zexp">${linkTerms(esc(q.exp))}</div>
+          </div>`;
+        }
+        return `<div class="zukan-item locked">🔒 ??? — クイズで正解すると解放</div>`;
+      }).join("");
+      return `<div class="zukan-diff-title"><span class="stars">${DIFFS[d].stars}</span> ${DIFFS[d].name}
+          <span class="zdprog">✅ ${gotD}/${dqs.length}</span></div>
+        <div class="zukan-list">${items}</div>`;
     }).join("");
-    return `<div class="zukan-cat-title">${c.icon} ${c.name}<span class="pill">${gotCat}/${qs.length}</span></div>
-      <div class="zukan-list">${items}</div>`;
+    return `<div class="zukan-cat-title">${c.icon} ${c.name}<span class="pill">${gotCat}/${qs.length}</span></div>${groups}`;
   }).join("");
 
   $app.innerHTML = `
