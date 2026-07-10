@@ -17,9 +17,9 @@ if (!script.includes(anchor)) throw new Error("注入位置(起動処理)が見�
 script = script.replace(anchor, `
 globalThis.__T = {
   QUESTIONS, CATS, DIFFS, GLOSSARY, BADGES,
-  examQuestions, dailyQuestions, examRank,
-  renderHome, renderStats, renderSettings, renderBadges, renderZukan,
-  startExam, answer, qById, questionsOf,
+  examQuestions, dailyQuestions, examRank, sessionReviewHTML,
+  renderHome, renderStats, renderSettings, renderBadges, renderZukan, renderResult,
+  startExam, startSession, answer, qById, questionsOf,
   completeDaily, currentStreak, playSound, haptic,
   getState: () => state, getSession: () => session,
   setSession: s => { session = s; },
@@ -126,7 +126,27 @@ b = fakeBtn();
 T.answer(b, [b], q);
 check("開いていなければスピードボーナスあり", st.speedBonusCount === 1, "count=" + st.speedBonusCount);
 
+console.log("— 振り返り(結果画面) —");
+sess = T.getSession();
+check("回答結果が記録される", sess.results.length === 2 && sess.results[0].correct === true);
+const reviewHtml = T.sessionReviewHTML();
+check("振り返りHTMLに問題と解説を含む", reviewHtml.includes("今回の振り返り") && reviewHtml.includes("rv-exp"));
+
+console.log("— じっくりモード(タイマーなし) —");
+st.noTimer = true;
+st.speedBonusCount = 0;
+T.startSession("basic", 1);
+sess = T.getSession();
+check("セッションにnoTimerが伝わる", sess.noTimer === true);
+check("remainが0(スピードボーナス対象外)", sess.remain === 0);
+q = T.qById(sess.qIds[sess.cur]);
+b = fakeBtn();
+T.answer(b, [b], q);
+check("じっくりモードではスピードボーナスなし", st.speedBonusCount === 0);
+st.noTimer = false;
+
 console.log("— 画面描画(例外なし) —");
+noThrow("renderResult(振り返り含む)", () => { T.getSession().cur = 999; T.renderResult(); });
 noThrow("renderHome", () => T.renderHome());
 noThrow("renderStats", () => T.renderStats());
 noThrow("renderSettings", () => T.renderSettings());

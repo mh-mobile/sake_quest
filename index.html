@@ -475,6 +475,39 @@
   }
   .confirm-btns { display: flex; gap: 8px; margin-top: 10px; }
   .confirm-btns .btn { flex: 1; }
+
+  /* ---------- 結果画面の振り返り ---------- */
+  .review-list { display: flex; flex-direction: column; gap: 8px; }
+  .review-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; font-size: 13px;
+  }
+  .review-item.ng { border-color: rgba(224,92,92,.5); background: linear-gradient(135deg, rgba(224,92,92,.07), var(--card)); }
+  .review-item .rv-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .review-item .rv-mark { font-size: 15px; }
+  .review-item .rv-num { font-weight: 800; color: var(--muted); font-size: 12px; }
+  .review-item .rv-head .stars { font-size: 11px; margin-left: auto; }
+  .review-item .rv-q { font-weight: 700; margin-bottom: 4px; }
+  .review-item .rv-a { color: var(--gold); font-weight: 800; margin-bottom: 4px; }
+  .review-item .rv-exp { color: var(--muted); line-height: 1.7; }
+
+  /* ---------- じっくりモード切替 ---------- */
+  .mode-toggle {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px 14px; margin-bottom: 12px; color: var(--text); cursor: pointer; font: inherit;
+    transition: border-color .15s ease;
+  }
+  .mode-toggle.on { border-color: var(--amber-dim); background: linear-gradient(135deg, rgba(240,168,50,.12), var(--card)); }
+  .mode-toggle .mt-icon { font-size: 22px; flex-shrink: 0; }
+  .mode-toggle .mt-text { flex: 1; }
+  .mode-toggle .mt-text b { display: block; font-size: 14px; }
+  .mode-toggle .mt-text small { color: var(--muted); font-size: 11px; }
+  .mode-toggle .mt-state {
+    font-weight: 800; font-size: 12px; flex-shrink: 0;
+    color: var(--muted); background: rgba(0,0,0,.25); border-radius: 999px; padding: 4px 12px;
+  }
+  .mode-toggle.on .mt-state { color: var(--gold); }
 </style>
 </head>
 <body>
@@ -979,6 +1012,7 @@ function defaultState() {
     diffStats: {},    // 難易度 -> {ok, ng}
     soundOn: true,    // 効果音のオン/オフ
     hapticsOn: true,  // バイブのオン/オフ
+    noTimer: false,   // じっくりモード(タイマーなし)
   };
 }
 
@@ -1330,6 +1364,14 @@ function renderDifficulty(cat) {
   <div class="screen">
     <button class="btn back-btn" id="btn-back">← ホーム</button>
     <div class="section-title" style="margin-top:0">${c.icon} ${esc(c.name)} — 難易度を選ぼう</div>
+    <button class="mode-toggle ${state.noTimer ? "on" : ""}" id="btn-notimer" role="switch" aria-checked="${!!state.noTimer}">
+      <span class="mt-icon">${state.noTimer ? "🐢" : "⏱️"}</span>
+      <span class="mt-text">
+        <b>じっくりモード(タイマーなし)</b>
+        <small>${state.noTimer ? "制限時間なし・解説をゆっくり読める(スピードボーナスなし)" : "OFF:各問" + TIME_LIMIT + "秒。素早い正解でボーナスXP"}</small>
+      </span>
+      <span class="mt-state">${state.noTimer ? "ON" : "OFF"}</span>
+    </button>
     <div class="diff-list">
       ${diffBtns}
       <button class="diff-btn" data-diff="0">
@@ -1344,6 +1386,11 @@ function renderDifficulty(cat) {
   </div>`;
 
   document.getElementById("btn-back").addEventListener("click", renderHome);
+  document.getElementById("btn-notimer").addEventListener("click", () => {
+    state.noTimer = !state.noTimer;
+    saveState();
+    renderDifficulty(cat);
+  });
   $app.querySelectorAll(".diff-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const d = parseInt(btn.dataset.diff, 10);
@@ -1443,6 +1490,8 @@ function buildSession(qs, meta) {
     speedBonuses: 0,
     newCards: 0,
     startXp: state.xp,
+    results: [],     // {id, correct} の記録(結果画面の振り返り用)
+    noTimer: false,  // じっくりモード(タイマーなし・スピードボーナスなし)
   }, meta);
   renderQuestion();
 }
@@ -1453,13 +1502,13 @@ function startSession(cat, diff) {
   const locked = shuffle(pool.filter(q => !state.unlocked[q.id]));
   const done   = shuffle(pool.filter(q => state.unlocked[q.id]));
   const picked = shuffle(locked.concat(done).slice(0, Math.min(SESSION_SIZE, pool.length)));
-  buildSession(picked, { cat, diff, isReview: false });
+  buildSession(picked, { cat, diff, isReview: false, noTimer: !!state.noTimer });
 }
 
 function startReviewSession() {
   const pool = shuffle(wrongList());
   if (pool.length === 0) return;
-  buildSession(pool.slice(0, Math.min(SESSION_SIZE, pool.length)), { cat: null, diff: null, isReview: true });
+  buildSession(pool.slice(0, Math.min(SESSION_SIZE, pool.length)), { cat: null, diff: null, isReview: true, noTimer: !!state.noTimer });
 }
 
 /* デイリーチャレンジ:日付ごとに固定の問題を出題(全難易度ミックス) */
@@ -1506,8 +1555,10 @@ function renderQuestion() {
       <span class="qnum">Q${session.cur + 1}/${session.qIds.length}</span>
     </div>
     <div class="timer-wrap">
-      <div class="timerbar"><div id="timerfill" style="width:100%"></div></div>
-      <span class="timer-num" id="timernum">${TIME_LIMIT}</span>
+      ${session.noTimer
+        ? `<span class="pill">🐢 じっくりモード</span>`
+        : `<div class="timerbar"><div id="timerfill" style="width:100%"></div></div>
+           <span class="timer-num" id="timernum">${TIME_LIMIT}</span>`}
       ${session.combo >= 2 ? `<span class="combo-tag">🔥${session.combo}コンボ</span>` : ""}
     </div>
     <div class="card question-card">
@@ -1543,12 +1594,13 @@ function renderQuestion() {
   };
 
   // タイマー開始(用語ポップアップ表示中は一時停止できるよう session に状態を保持)
-  session.remain = TIME_LIMIT;
+  // じっくりモードではカウントダウンなし(remain=0 でスピードボーナスも付かない)
+  session.remain = session.noTimer ? 0 : TIME_LIMIT;
   session._q = q;
   session._btns = btns;
   session.glossaryUsed = false; // この問題で用語解説を開いたか(開いたらスピードボーナス対象外)
   questionActive = true;
-  startCountdown();
+  if (!session.noTimer) startCountdown();
 }
 
 /* カウントダウンを開始/再開(session.remain から続行) */
@@ -1636,6 +1688,7 @@ function answer(btn, btns, q) {
 
   bump(state.catStats, q.cat, isCorrect);
   bump(state.diffStats, q.d, isCorrect);
+  if (session.results) session.results.push({ id: q.id, correct: !!isCorrect });
   playSound(isCorrect ? "correct" : "wrong");
   haptic(isCorrect ? "correct" : "wrong");
 
@@ -1703,6 +1756,29 @@ function nextQuestion() {
 /* ============================================================
    画面:リザルト
    ============================================================ */
+/* 今回のセッションの振り返り(問題・正解・解説を一覧表示) */
+function sessionReviewHTML() {
+  if (!session.results || session.results.length === 0) return "";
+  const items = session.results.map((r, i) => {
+    const q = qById(r.id);
+    if (!q) return "";
+    return `<div class="review-item ${r.correct ? "ok" : "ng"}">
+      <div class="rv-head">
+        <span class="rv-mark">${r.correct ? "⭕" : "❌"}</span>
+        <span class="rv-num">Q${i + 1}</span>
+        <span class="pill">${CATS[q.cat].icon} ${CATS[q.cat].name}</span>
+        <span class="stars">${DIFFS[q.d].stars}</span>
+      </div>
+      <div class="rv-q">${linkTerms(esc(q.q))}</div>
+      <div class="rv-a">A. ${esc(q.c[0])}</div>
+      <div class="rv-exp">${linkTerms(esc(q.exp))}</div>
+    </div>`;
+  }).join("");
+  return `
+    <div class="stats-title" style="margin-top:24px">📖 今回の振り返り — 解説をじっくりどうぞ</div>
+    <div class="review-list">${items}</div>`;
+}
+
 function renderResult() {
   if (session.isExam) { renderExamResult(); return; }
   if (session.isDaily) completeDaily();
@@ -1754,6 +1830,8 @@ function renderResult() {
     <button class="btn share-btn block" id="btn-share" style="margin-top:8px">📤 結果をシェア</button>
     <button class="btn primary block" id="btn-again" style="margin-top:10px">${session.isDaily ? "もう一度 🍺" : "もう一度挑戦 🍺"}</button>
     <button class="btn block" id="btn-home" style="margin-top:10px">ホームへ戻る</button>
+
+    ${sessionReviewHTML()}
   </div>`;
 
   document.getElementById("btn-share").addEventListener("click", () => shareResult(shareText));
@@ -1846,6 +1924,8 @@ function renderExamResult() {
     <button class="btn share-btn block" id="btn-share" style="margin-top:8px">📤 結果をシェア</button>
     <button class="btn primary block" id="btn-again" style="margin-top:10px">もう一度受験 🏁</button>
     <button class="btn block" id="btn-home" style="margin-top:10px">ホームへ戻る</button>
+
+    ${sessionReviewHTML()}
   </div>`;
 
   document.getElementById("btn-share").addEventListener("click", () => shareResult(shareText));
